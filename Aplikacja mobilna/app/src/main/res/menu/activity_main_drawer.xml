@@ -17,8 +17,9 @@
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/menu_slideshow" />
 
-        <item android:id="@+id/nav_generalpage"
+        <item
+            android:id="@+id/nav_generalpage"
             android:icon="@drawable/ic_menu_gallery"
-            android:title="Generalpage" />
+            android:title="@string/menu_generalpage" />
     </group>
 </menu>
