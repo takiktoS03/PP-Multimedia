@@ -22,4 +22,9 @@
         android:name="com.example.multimedia.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" />
+
+    <fragment android:id="@+id/nav_generalpage"
+        android:name="com.example.multimedia.ui.generalPage.GeneralPageFragment"
+        android:label="Main Page"
+        tools:layout="@layout/fragment_general_page" />
 </navigation>
