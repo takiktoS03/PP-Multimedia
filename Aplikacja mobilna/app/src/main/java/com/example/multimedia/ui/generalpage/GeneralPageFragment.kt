@@ -11,7 +11,6 @@ import com.example.multimedia.databinding.FragmentGeneralPageBinding
 
 class GeneralPageFragment : Fragment() {
 
-    // Binding jest ważny między onCreateView a onDestroyView
     private var _binding: FragmentGeneralPageBinding? = null
     private val binding get() = _binding!!
 
@@ -27,11 +26,10 @@ class GeneralPageFragment : Fragment() {
         _binding = FragmentGeneralPageBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // Założenie: w layoutcie fragment_general_page.xml znajduje się TextView o id textGeneralPage
-        val textView: TextView = binding.textGeneralPage
-        generalPageViewModel.text.observe(viewLifecycleOwner) { newText ->
-            textView.text = newText
-        }
+//        val textView: TextView = binding.textGeneralPage
+//        generalPageViewModel.text.observe(viewLifecycleOwner) { newText ->
+//            textView.text = newText
+//        }
 
         return root
     }

@@ -6,9 +6,8 @@ import androidx.lifecycle.ViewModel
 
 class GeneralPageViewModel : ViewModel() {
 
-    // Przykładowe dane LiveData, możesz je modyfikować według swoich potrzeb
-    private val _text = MutableLiveData<String>().apply {
-        value = "To jest ekran GeneralPage"
-    }
-    val text: LiveData<String> = _text
+//    private val _text = MutableLiveData<String>().apply {
+//        value = "Witaj, aby korzystać z aplikacji zaloguj się"
+//    }
+//    val text: LiveData<String> = _text
 }
