@@ -15,8 +15,8 @@
         android:gravity="center"
         android:text="Witaj, zaloguj się, aby móc korzystać z aplikacji"
         android:textSize="30sp"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="0dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textView2"

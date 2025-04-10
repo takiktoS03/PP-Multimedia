@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "554940579754",
+    "project_id": "image-management-cbaee",
+    "storage_bucket": "image-management-cbaee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:554940579754:android:5639247dad0c94823cf5d3",
+        "android_client_info": {
+          "package_name": "com.example.multimedia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLnn61ojEk9wajOMLIXoBpmJZpiB0AjaI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -16,9 +16,25 @@ class PhotoRepository @Inject constructor(
     }
 
     fun getPhotos(): LiveData<List<Photo>> {
-        val photos = MutableLiveData<List<Photo>>()
-        photos.value = listOf() // Przykładowa pusta lista, aby uniknąć błędów.
-        return photos
+        val liveData = MutableLiveData<List<Photo>>()
+
+        firestore.collection("photos")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) {
+                    liveData.value = emptyList()
+                    return@addSnapshotListener
+                }
+
+                val photos = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Photo::class.java)?.copy(id = doc.id)
+                }
+
+                liveData.value = photos
+            }
+
+        return liveData
     }
+
+
 
 }
