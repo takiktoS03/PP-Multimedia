@@ -15,7 +15,7 @@
             android:id="@+id/imageViewPhoto"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:contentDescription="TODO"
+            android:contentDescription="Image "
             android:scaleType="centerCrop"/>
 
         <TextView
@@ -31,6 +31,7 @@
             android:id="@+id/textDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="Description"
             android:textSize="14sp"
             android:paddingTop="4dp"/>
     </LinearLayout>

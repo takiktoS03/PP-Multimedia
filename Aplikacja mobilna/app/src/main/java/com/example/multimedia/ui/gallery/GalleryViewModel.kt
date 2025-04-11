@@ -10,8 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
-    private val repository: PhotoRepository
-) : ViewModel() {
+    private val repository: PhotoRepository) : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
         value = "This is gallery Fragment"

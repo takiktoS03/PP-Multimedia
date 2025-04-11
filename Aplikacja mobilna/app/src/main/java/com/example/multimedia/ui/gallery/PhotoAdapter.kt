@@ -1,4 +1,3 @@
-package com.example.multimedia.ui.gallery
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -14,6 +13,7 @@ class PhotoAdapter : ListAdapter<Photo, PhotoAdapter.PhotoViewHolder>(DiffCallba
     class PhotoViewHolder(private val binding: ItemPhotoBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(photo: Photo) {
             binding.textTitle.text = photo.title
+            binding.textDescription.text = photo.description
             Glide.with(binding.imageViewPhoto.context)
                 .load(photo.file_path)
                 .into(binding.imageViewPhoto)
