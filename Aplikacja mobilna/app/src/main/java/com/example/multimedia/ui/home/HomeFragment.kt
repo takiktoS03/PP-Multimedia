@@ -20,7 +20,6 @@ class HomeFragment : Fragment() {
     ): View {
         val homeViewModel =
             ViewModelProvider(this)[HomeViewModel::class.java]
-
         val composeView = ComposeView(requireContext())
 
         composeView.setContent {

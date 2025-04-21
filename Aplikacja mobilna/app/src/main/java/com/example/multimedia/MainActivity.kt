@@ -1,55 +1,122 @@
-package com.example.multimedia
+    package com.example.multimedia
 
-import android.os.Bundle
-import android.view.Menu
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.navigation.NavigationView
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
-import com.example.multimedia.databinding.ActivityMainBinding
-import dagger.hilt.android.AndroidEntryPoint
+    import android.os.Bundle
+    import androidx.activity.ComponentActivity
+    import androidx.activity.compose.setContent
+    import androidx.compose.foundation.layout.padding
+    import androidx.compose.material.icons.Icons
+    import androidx.compose.material.icons.filled.Home
+    import androidx.compose.material.icons.filled.Menu
+    import androidx.compose.material3.*
+    import androidx.compose.runtime.*
+    import androidx.compose.ui.Modifier
+    import androidx.compose.ui.platform.LocalContext
+    import androidx.compose.ui.res.painterResource
+    import androidx.compose.ui.res.stringResource
+    import androidx.compose.ui.unit.dp
+    import androidx.navigation.compose.*
+    import androidx.navigation.compose.rememberNavController
+    import androidx.navigation.findNavController
+    import com.example.multimedia.ui.gallery.GalleryScreen
+    import com.example.multimedia.ui.home.HomeViewModel
+    import com.example.multimedia.ui.pages.HomeScreen
+    import com.example.multimedia.ui.theme.MultimediaTheme
+    import dagger.hilt.android.AndroidEntryPoint
+    import kotlinx.coroutines.launch
 
-@AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+    @AndroidEntryPoint
+    @OptIn(ExperimentalMaterial3Api::class)
+    class MainActivity : ComponentActivity() {
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContent {
+                MultimediaTheme {
+                    val navController = rememberNavController()
+                    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                    val scope = rememberCoroutineScope()
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentRoute = navBackStackEntry?.destination?.route
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
+                    ModalNavigationDrawer(
+                        drawerState = drawerState,
+                        drawerContent = {
+                            ModalDrawerSheet {
+                                Text(
+                                    "Menu",
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+                                // HOME
+                                NavigationDrawerItem(
+                                    label = { Text("Home") },
+                                    selected = currentRoute == "home",
+                                    icon = {
+                                        Icon(Icons.Default.Home, contentDescription = null)
+                                    },
+                                    onClick = {
+                                        navController.navigate("home") {
+                                            launchSingleTop = true
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        }
+                                        scope.launch { drawerState.close() }
+                                    }
+                                )
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+                                // GALLERY
+                                NavigationDrawerItem(
+                                    label = { Text("Gallery") },
+                                    selected = currentRoute == "gallery",
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_menu_gallery),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    onClick = {
+                                        navController.navigate("gallery") {
+                                            launchSingleTop = true
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        }
+                                        scope.launch { drawerState.close() }
+                                    }
+                                )
+                            }
+                        }
+                    ) {
+                        Scaffold(
+                            topBar = {
+                                TopAppBar(
+                                    title = { Text("Moja Aplikacja") },
+                                    navigationIcon = {
+                                        IconButton(onClick = {
+                                            scope.launch { drawerState.open() }
+                                        }) {
+                                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                                        }
+                                    }
+                                )
+                            }
+                        ) { innerPadding ->
+                            NavHost(
+                                navController = navController,
+                                startDestination = "home",
+                                modifier = Modifier.padding(innerPadding)
+                            ) {
+                                composable("home") {
+                                    val viewModel = remember { HomeViewModel() }
+                                    val title = viewModel.text.collectAsState()
+                                    val isLoading = viewModel.isLoading.collectAsState()
+                                    HomeScreen(title.value, isLoading.value)
+                                }
 
-        setSupportActionBar(binding.appBarMain.toolbar)
-
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow, R.id.nav_generalpage
-            ), drawerLayout
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+                                composable("gallery") {
+                                    GalleryScreen()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main, menu)
-        return true
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-}
