@@ -1,5 +1,6 @@
 package com.example.multimedia.ui.gallery
 
+import PhotoAdapter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
