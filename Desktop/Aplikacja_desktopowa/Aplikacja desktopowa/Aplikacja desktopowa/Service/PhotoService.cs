@@ -12,10 +12,10 @@ public class PhotoService
 
     public PhotoService()
     {
-        string pathToKey = "image-management-cbaee-firebase-adminsdk-fbsvc-534514b3a5.json"; // Ścieżka do Twojego pliku klucza
-        Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", pathToKey);
+        //string pathToKey = "image-management-cbaee-firebase-adminsdk-fbsvc-534514b3a5.json"; 
+        //Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", pathToKey);
 
-        _firestore = FirestoreDb.Create("apka_desktop_id"); // np. "mojprojekt-123456"
+        //_firestore = FirestoreDb.Create("image-management-cbaee", "image-db");
     }
 
 

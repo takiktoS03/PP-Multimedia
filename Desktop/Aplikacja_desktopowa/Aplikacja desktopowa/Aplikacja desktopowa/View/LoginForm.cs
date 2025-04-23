@@ -1,0 +1,138 @@
+﻿using Aplikacja_desktopowa.Service;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Aplikacja_desktopowa.View
+{
+    public partial class LoginForm : Form
+    {
+        private TextBox textBoxEmail;
+        private TextBox textBoxPassword;
+        private Button buttonLogin;
+        private TextBox textBoxLogInfo;
+        private readonly UserService userService = new UserService();
+
+        public LoginForm()
+        {
+            InitializeComponent();
+            this.Text = "Logowanie";
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Load += LoginForm_Load;
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+            // nic na razie
+        }
+
+        private async void buttonLogin_Click(object sender, EventArgs e)
+        {
+            string email = textBoxEmail.Text.Trim();
+            string password = textBoxPassword.Text.Trim();
+
+            var user = await userService.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                textBoxLogInfo.Text = "Nie znaleziono użytkownika.";
+                return;
+            }
+
+            if (user.PasswordHash != password)
+            {
+                textBoxLogInfo.Text = "Błędne hasło.";
+                return;
+            }
+
+            textBoxLogInfo.Text = $"Zalogowano jako: {user.Name}";
+
+            // przejscie do innego okna
+            Form2 form = new Form2();
+            form.Show();
+            //this.Hide();
+        }
+
+        private void InitializeComponent()
+        {
+            this.textBoxEmail = new System.Windows.Forms.TextBox();
+            this.textBoxPassword = new System.Windows.Forms.TextBox();
+            this.buttonLogin = new System.Windows.Forms.Button();
+            this.textBoxLogInfo = new System.Windows.Forms.TextBox();
+            this.SuspendLayout();
+            // 
+            // textBoxEmail
+            // 
+            this.textBoxEmail.Location = new System.Drawing.Point(30, 30);
+            this.textBoxEmail.Name = "textBoxEmail";
+            this.textBoxEmail.Size = new System.Drawing.Size(200, 20);
+            this.textBoxEmail.TabIndex = 0;
+            // 
+            // textBoxPassword
+            // 
+            this.textBoxPassword.Location = new System.Drawing.Point(30, 70);
+            this.textBoxPassword.Name = "textBoxPassword";
+            this.textBoxPassword.Size = new System.Drawing.Size(200, 20);
+            this.textBoxPassword.TabIndex = 1;
+            this.textBoxPassword.UseSystemPasswordChar = true;
+            // 
+            // buttonLogin
+            // 
+            this.buttonLogin.Location = new System.Drawing.Point(30, 117);
+            this.buttonLogin.Name = "buttonLogin";
+            this.buttonLogin.Size = new System.Drawing.Size(75, 23);
+            this.buttonLogin.TabIndex = 2;
+            this.buttonLogin.Text = "Log";
+            this.buttonLogin.UseVisualStyleBackColor = true;
+            this.buttonLogin.Click += new System.EventHandler(this.buttonLogin_Click);
+            // 
+            // textBoxLogInfo
+            // 
+            this.textBoxLogInfo.Location = new System.Drawing.Point(315, 29);
+            this.textBoxLogInfo.Name = "textBoxLogInfo";
+            this.textBoxLogInfo.ReadOnly = true;
+            this.textBoxLogInfo.Size = new System.Drawing.Size(147, 20);
+            this.textBoxLogInfo.TabIndex = 3;
+            // 
+            // LoginForm
+            // 
+            this.ClientSize = new System.Drawing.Size(848, 441);
+            this.Controls.Add(this.textBoxLogInfo);
+            this.Controls.Add(this.buttonLogin);
+            this.Controls.Add(this.textBoxEmail);
+            this.Controls.Add(this.textBoxPassword);
+            this.Name = "LoginForm";
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        //private async void buttonLogin_Click_1(object sender, EventArgs e)
+        //{
+        //    string email = textBoxEmail.Text.Trim();
+        //    string password = textBoxPassword.Text.Trim();
+
+        //    var user = await userService.GetUserByEmailAsync(email);
+        //    if (user == null)
+        //    {
+        //        textBoxLogInfo.Text = "Nie znaleziono użytkownika.";
+        //        return;
+        //    }
+
+        //    if (user.PasswordHash != password)
+        //    {
+        //        textBoxLogInfo.Text = "Błędne hasło.";
+        //        return;
+        //    }
+
+        //    textBoxLogInfo.Text = $"Zalogowano jako: {user.Name}";
+
+        //    // przejscie do innego okna
+        //    Form2 form = new Form2();
+        //    form.Show();
+        //    //this.Hide();
+        //}
+    }
+}

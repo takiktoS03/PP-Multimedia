@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 public class PhotoViewModel
@@ -9,7 +10,7 @@ public class PhotoViewModel
 
     public PhotoViewModel()
     {
-        string path = "image-management-cbaee-firebase-adminsdk-fbsvc-534514b3a5.json";
+        string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "image-management-cbaee-firebase-adminsdk-fbsvc-5499d8a881.json");
         Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
         _firestore = FirestoreDb.Create("apka_desktop_id");
     }

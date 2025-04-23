@@ -14,21 +14,15 @@ namespace Aplikacja_desktopowa.View
 {
     public partial class Form2 : Form
     {
-        //private PictureBox pictureBoxPhoto;
-
         public Form2()
         {
-            this.Text = "Podgląd zdjęcia";
+            InitializeComponent();
+
+            this.Text = "Photo Manager";
             this.Size = new Size(800, 600);
 
-            pictureBoxPhoto = new PictureBox
-            {
-                Dock = DockStyle.Fill,
-                SizeMode = PictureBoxSizeMode.Zoom,
-                BackColor = Color.Black
-            };
+            pictureBoxPhoto.SizeMode = PictureBoxSizeMode.Zoom;
 
-            this.Controls.Add(pictureBoxPhoto);
             this.Load += Form1_Load;
         }
 
