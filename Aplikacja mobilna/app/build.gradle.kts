@@ -48,12 +48,18 @@ plugins {
 }
 
 dependencies {
+    implementation(platform(libs.firebase.bom))
 
+    // Firebase
+    implementation(libs.firebase.analytics)
+    implementation(libs.google.firebase.auth)
+    implementation(libs.google.firebase.firestore)
+
+    // AndroidX / Jetpack Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
-
     implementation(libs.androidx.ui)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.activity.compose)
@@ -63,27 +69,27 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.coil.compose)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.firebase.auth.ktx)
-    implementation(libs.google.firebase.firestore.ktx)
-
-
-    debugImplementation(libs.androidx.ui.tooling)
-
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
-    implementation(libs.firebase.auth)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
+
+    // Multimedia / media3
     implementation(libs.androidx.media3.common.ktx)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    implementation(libs.google.firebase.storage.ktx)
+    kapt(libs.hilt.compiler)
+
+    // Image
+    implementation(libs.glide)
+
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-    implementation(libs.glide)
-    apply(plugin = "com.google.gms.google-services")
+
+    // Debug only
+    debugImplementation(libs.androidx.ui.tooling)
 }

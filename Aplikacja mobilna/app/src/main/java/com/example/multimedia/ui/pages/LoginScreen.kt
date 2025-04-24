@@ -79,48 +79,26 @@ fun LoginScreen(
                             "name" to name,
                             "created_at" to FieldValue.serverTimestamp()
                         )
+
                         FirebaseFirestore.getInstance()
-                            .collection("users")
+                            .collection("users_debug") // testowa nazwa
                             .document(uid ?: "")
                             .set(userData)
                             .addOnSuccessListener {
-                                Log.d("Register", "✅ Zapisano do Firestore")
+                                Log.d("Register", "Zapisano do Firestore")
                                 onLoginSuccess()
                             }
                             .addOnFailureListener {
-                                Log.e("Register", "❌ Błąd zapisu do Firestore: ${it.message}")
+                                Log.e("Register", "Błąd zapisu do Firestore: ${it.message}")
                             }
                     }
                     .addOnFailureListener {
-                        Log.e("Register", "❌ Rejestracja nie powiodła się: ${it.message}")
+                        Log.e("Register", "Rejestracja nie powiodła się: ${it.message}")
                     }
 
             }) {
                 Text("Zarejestruj się")
             }
-
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
-            if (uid == null) {
-                Log.e("FirestoreTest", "❌ UID jest null – użytkownik nie zalogowany?")
-                return
-            }
-            val userData = mapOf(
-                "email" to FirebaseAuth.getInstance().currentUser?.email,
-                "name" to name, // lub inna zmienna z formularza
-                "created_at" to Timestamp.now()
-            )
-
-            FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .set(userData)
-                .addOnSuccessListener {
-                    Log.d("FirestoreTest", "✅ Zapisano użytkownika do Firestore")
-                    onLoginSuccess()
-                }
-                .addOnFailureListener {
-                    Log.e("FirestoreTest", "❌ Błąd zapisu: ${it.message}")
-                }
 
             TextButton(onClick = {
                 isRegistering = false
@@ -128,7 +106,8 @@ fun LoginScreen(
             }) {
                 Text("Masz już konto? Zaloguj się")
             }
-        } else {
+        }
+        else {
             Button(onClick = {
                 if (email.isBlank() || password.isBlank()) {
                     error = "Wprowadź email i hasło"
