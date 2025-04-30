@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 
 @Composable
 fun LoginScreen(
@@ -80,8 +81,8 @@ fun LoginScreen(
                             "created_at" to FieldValue.serverTimestamp()
                         )
 
-                        FirebaseFirestore.getInstance()
-                            .collection("users_debug") // testowa nazwa
+                        FirebaseFirestore.getInstance("image-db")
+                            .collection("users")
                             .document(uid ?: "")
                             .set(userData)
                             .addOnSuccessListener {
