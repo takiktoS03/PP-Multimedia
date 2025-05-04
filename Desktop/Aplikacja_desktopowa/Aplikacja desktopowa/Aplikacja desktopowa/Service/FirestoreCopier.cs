@@ -16,7 +16,7 @@ namespace Aplikacja_desktopowa.Service
         public async Task CopyAsync()
         {
             //  Plik z uprawnieniami
-            string credentialsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "image-management-cbaee-firebase-adminsdk-fbsvc-5499d8a881.json");
+            string credentialsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "image-management-cbaee-firebase-adminsdk-fbsvc-534514b3a5.json");
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialsPath);
 
             // Połączenie z bazą image-db (źródłowa)

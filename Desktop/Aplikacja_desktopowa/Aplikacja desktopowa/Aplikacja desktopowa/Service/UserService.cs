@@ -19,27 +19,36 @@ namespace Aplikacja_desktopowa.Service
 
         public UserService()
         {
-            string path = "image-management-cbaee-firebase-adminsdk-fbsvc-5499d8a881.json";
+            string path = "image-management-cbaee-firebase-adminsdk-fbsvc-534514b3a5.json";
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
 
             // Tworzymy klienta Firestore (domyślna baza danych)
-            FirestoreDb db = FirestoreDb.Create("image-management-cbaee");
+            _firestore = FirestoreDb.Create("image-management-cbaee");
         }
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            Query query = _firestore.Collection("users").WhereEqualTo("email", email);
-            QuerySnapshot snapshot = await query.GetSnapshotAsync();
-
-            foreach (var doc in snapshot.Documents)
+            try
             {
-                if (doc.Exists)
-                {
-                    return doc.ConvertTo<User>();
-                }
-            }
+                Query query = _firestore.Collection("users").WhereEqualTo("email", email);
+                QuerySnapshot snapshot = await query.GetSnapshotAsync();
 
-            return null;
+                foreach (var doc in snapshot.Documents)
+                {
+                    if (doc.Exists)
+                    {
+                        return doc.ConvertTo<User>();
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as needed
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return null;
+            }
         }
     }
 }

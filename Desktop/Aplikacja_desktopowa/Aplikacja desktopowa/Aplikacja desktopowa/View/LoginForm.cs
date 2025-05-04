@@ -14,6 +14,8 @@ namespace Aplikacja_desktopowa.View
         private TextBox textBoxPassword;
         private Button buttonLogin;
         private TextBox textBoxLogInfo;
+        private Label labelEmail;
+        private Label labelPassword;
         private readonly UserService userService = new UserService();
 
         public LoginForm()
@@ -22,11 +24,17 @@ namespace Aplikacja_desktopowa.View
             this.Text = "Logowanie";
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Load += LoginForm_Load;
+            this.FormClosed += LoginForm_FormClosed;
         }
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
             // nic na razie
+        }
+
+        private void LoginForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit(); // Ensure the application exits when this form is closed
         }
 
         private async void buttonLogin_Click(object sender, EventArgs e)
@@ -61,18 +69,20 @@ namespace Aplikacja_desktopowa.View
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.buttonLogin = new System.Windows.Forms.Button();
             this.textBoxLogInfo = new System.Windows.Forms.TextBox();
+            this.labelEmail = new System.Windows.Forms.Label();
+            this.labelPassword = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // textBoxEmail
             // 
-            this.textBoxEmail.Location = new System.Drawing.Point(30, 30);
+            this.textBoxEmail.Location = new System.Drawing.Point(100, 30);
             this.textBoxEmail.Name = "textBoxEmail";
             this.textBoxEmail.Size = new System.Drawing.Size(200, 20);
             this.textBoxEmail.TabIndex = 0;
             // 
             // textBoxPassword
             // 
-            this.textBoxPassword.Location = new System.Drawing.Point(30, 70);
+            this.textBoxPassword.Location = new System.Drawing.Point(100, 70);
             this.textBoxPassword.Name = "textBoxPassword";
             this.textBoxPassword.Size = new System.Drawing.Size(200, 20);
             this.textBoxPassword.TabIndex = 1;
@@ -80,7 +90,7 @@ namespace Aplikacja_desktopowa.View
             // 
             // buttonLogin
             // 
-            this.buttonLogin.Location = new System.Drawing.Point(30, 117);
+            this.buttonLogin.Location = new System.Drawing.Point(100, 117);
             this.buttonLogin.Name = "buttonLogin";
             this.buttonLogin.Size = new System.Drawing.Size(75, 23);
             this.buttonLogin.TabIndex = 2;
@@ -96,9 +106,29 @@ namespace Aplikacja_desktopowa.View
             this.textBoxLogInfo.Size = new System.Drawing.Size(147, 20);
             this.textBoxLogInfo.TabIndex = 3;
             // 
+            // labelEmail
+            // 
+            this.labelEmail.AutoSize = true;
+            this.labelEmail.Location = new System.Drawing.Point(30, 33);
+            this.labelEmail.Name = "labelEmail";
+            this.labelEmail.Size = new System.Drawing.Size(35, 13);
+            this.labelEmail.TabIndex = 4;
+            this.labelEmail.Text = "Email:";
+            // 
+            // labelPassword
+            // 
+            this.labelPassword.AutoSize = true;
+            this.labelPassword.Location = new System.Drawing.Point(30, 73);
+            this.labelPassword.Name = "labelPassword";
+            this.labelPassword.Size = new System.Drawing.Size(36, 13);
+            this.labelPassword.TabIndex = 5;
+            this.labelPassword.Text = "Hasło:";
+            // 
             // LoginForm
             // 
             this.ClientSize = new System.Drawing.Size(848, 441);
+            this.Controls.Add(this.labelPassword);
+            this.Controls.Add(this.labelEmail);
             this.Controls.Add(this.textBoxLogInfo);
             this.Controls.Add(this.buttonLogin);
             this.Controls.Add(this.textBoxEmail);
@@ -106,7 +136,6 @@ namespace Aplikacja_desktopowa.View
             this.Name = "LoginForm";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         //private async void buttonLogin_Click_1(object sender, EventArgs e)
