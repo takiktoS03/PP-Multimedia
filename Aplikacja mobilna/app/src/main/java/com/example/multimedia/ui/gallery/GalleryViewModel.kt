@@ -1,10 +1,12 @@
 package com.example.multimedia.ui.gallery
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.multimedia.data.model.Photo
 import com.example.multimedia.data.repository.PhotoRepository
+import com.google.firebase.Timestamp
 import javax.inject.Inject
 import dagger.hilt.android.lifecycle.HiltViewModel
 
@@ -19,7 +21,19 @@ class GalleryViewModel @Inject constructor(
 
     val photos: LiveData<List<Photo>> = repository.getPhotos()
 
-    fun refreshGallery() {
-        // trigger loading from repository
+    fun uploadPhoto(uri: Uri, title: String, description: String) {
+        val meta = Photo(
+            title = title,
+            description = description,
+            file_path = "", // zostanie nadpisany
+            uploaded_at = Timestamp.now()
+        )
+
+        repository.uploadPhoto(
+            photoUri = uri,
+            meta = meta,
+            onSuccess = { /* np. pokaż snackbar */ },
+            onFailure = { error -> error.printStackTrace() }
+        )
     }
 }

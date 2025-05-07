@@ -14,6 +14,7 @@ class PhotoRepository @Inject constructor(
     private val firebaseStorage: FirebaseStorage,
     private val firestore: FirebaseFirestore
 ) {
+    private val storageRef = firebaseStorage.getReferenceFromUrl("gs://image-management-cbaee.firebasestorage.app")
     fun uploadPhoto(
         photoUri: Uri,
         meta: Photo,
@@ -21,13 +22,13 @@ class PhotoRepository @Inject constructor(
         onFailure: (Exception) -> Unit
     ) {
         val fileName = "${UUID.randomUUID()}.jpg"
-        val storageRef = firebaseStorage.reference.child("photos/$fileName")
+        val photoRef = storageRef.child("photos/$fileName")
 
-        val uploadTask = storageRef.putFile(photoUri)
+        val uploadTask = photoRef.putFile(photoUri)
 
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) throw task.exception ?: Exception("Upload failed")
-            storageRef.downloadUrl
+            photoRef.downloadUrl
         }.addOnSuccessListener { uri ->
             val photo = meta.copy(
                 file_path = uri.toString(),
