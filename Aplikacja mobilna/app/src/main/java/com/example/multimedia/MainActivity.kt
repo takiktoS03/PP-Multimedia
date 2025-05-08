@@ -24,6 +24,7 @@ import com.example.multimedia.ui.pages.HomeScreen
 import com.example.multimedia.ui.pages.LoginScreen
 import com.example.multimedia.ui.theme.MultimediaTheme
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import dagger.hilt.android.AndroidEntryPoint
 

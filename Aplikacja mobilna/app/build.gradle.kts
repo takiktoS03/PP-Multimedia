@@ -61,7 +61,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.ui)
-    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation(libs.androidx.material3.v130)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.runtime.android)
@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.exifinterface)
 
     // Multimedia / media3
     implementation(libs.androidx.media3.common.ktx)

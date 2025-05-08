@@ -21,19 +21,25 @@ class GalleryViewModel @Inject constructor(
 
     val photos: LiveData<List<Photo>> = repository.getPhotos()
 
-    fun uploadPhoto(uri: Uri, title: String, description: String) {
+    fun uploadPhoto(
+        uri: Uri,
+        title: String,
+        description: String,
+        location: String,
+        tags: List<String>,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
         val meta = Photo(
             title = title,
             description = description,
-            file_path = "", // zostanie nadpisany
+            location = location,
+            tags = tags,
+            file_path = "",
             uploaded_at = Timestamp.now()
         )
 
-        repository.uploadPhoto(
-            photoUri = uri,
-            meta = meta,
-            onSuccess = { /* np. pokaż snackbar */ },
-            onFailure = { error -> error.printStackTrace() }
-        )
+        repository.uploadPhoto(uri, meta, onSuccess, onFailure)
     }
+
 }
