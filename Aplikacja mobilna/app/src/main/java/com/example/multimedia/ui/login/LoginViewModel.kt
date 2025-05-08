@@ -61,8 +61,8 @@ class LoginViewModel : ViewModel() {
     suspend fun register(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         val s = state.value
 
-        if (s.email.isBlank() || s.password.isBlank() || s.confirmPassword.isBlank() || s.name.isBlank()) {
-            onFailure("Uzupełnij wszystkie pola")
+        if (!s.canSubmit) {
+            onFailure("Upewnij się, że wszystkie pola są poprawnie wypełnione")
             return
         }
 
@@ -127,5 +127,4 @@ class LoginViewModel : ViewModel() {
     fun resetForm() {
         _state.value = LoginState()
     }
-
 }

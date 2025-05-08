@@ -1,6 +1,7 @@
 package com.example.multimedia.ui.pages
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,30 +31,39 @@ fun HomeScreen(title: String, isLoading: Boolean) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            verticalArrangement = Arrangement.Top, // 🔼 teksty będą przy górze
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 24.dp, vertical = 32.dp)
+                .background(MaterialTheme.colorScheme.background),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
             Text(
                 text = "👋 Witaj w MultimediaApp!",
-                style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Center
+                style = MaterialTheme.typography.headlineLarge,
+                fontSize = 28.sp
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "To Twoje centrum multimediów 📸🎵\nPrzeglądaj, zarządzaj i odkrywaj swoje wspomnienia!",
+                text = """
+                    Aplikacja służy jako centrum multimedialne, w którym możesz:
+                    
+                    • Przeglądać galerię zdjęć i filmów 📷
+                    • Zarządzać swoim kontem użytkownika 👤
+                    
+                    Po lewej stronie znajduje się panel nawigacyjny (menu), z którego możesz przełączać się pomiędzy:
+                    
+                    🏠 Stroną główną  
+                    🖼️ Galerią  
+                    👤 Panelem konta
+                    
+                    Kliknij ikonę menu w lewym górnym rogu, aby rozwinąć lub schować panel. 
+                    Zalogowany użytkownik może przeglądać zasoby i edytować dane konta.
+                    
+                    Życzymy miłego korzystania!
+                """.trimIndent(),
                 style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Wybierz coś z menu po lewej, aby zacząć 🚀",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
+                lineHeight = 22.sp
             )
         }
     }

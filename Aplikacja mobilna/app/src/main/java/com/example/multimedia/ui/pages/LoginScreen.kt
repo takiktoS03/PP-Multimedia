@@ -82,6 +82,16 @@ fun LoginScreen(
                 label = "Imię",
                 isError = state.nameError != null
             )
+            state.nameError?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .padding(start = 8.dp, top = 4.dp)
+                        .fillMaxWidth()
+                )
+            }
             Spacer(Modifier.height(12.dp))
         }
 
@@ -92,6 +102,16 @@ fun LoginScreen(
             label = "Adress e-mail",
             isError = state.emailError != null
         )
+        state.emailError?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(start = 8.dp, top = 4.dp)
+                    .fillMaxWidth()
+            )
+        }
         Spacer(Modifier.height(12.dp))
 
         StyledTextField(
@@ -102,6 +122,16 @@ fun LoginScreen(
             isError = state.passwordError != null,
             isPassword = true
         )
+        state.passwordError?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(start = 8.dp, top = 4.dp)
+                    .fillMaxWidth()
+            )
+        }
 
         if (state.isRegistering) {
             Spacer(Modifier.height(12.dp))
@@ -113,6 +143,16 @@ fun LoginScreen(
                 isError = state.confirmPasswordError != null,
                 isPassword = true
             )
+            state.confirmPasswordError?.let{
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .padding(start = 8.dp, top = 4.dp)
+                        .fillMaxWidth()
+                )
+            }
         }
 
         Spacer(Modifier.height(24.dp))
@@ -170,7 +210,9 @@ private fun StyledTextField(
     label: String,
     isError: Boolean = false,
     isPassword: Boolean = false
-) {
+)
+
+{
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,

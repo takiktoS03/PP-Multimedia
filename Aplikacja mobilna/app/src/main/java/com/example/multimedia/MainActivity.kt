@@ -25,7 +25,9 @@ import com.example.multimedia.ui.pages.LoginScreen
 import com.example.multimedia.ui.theme.MultimediaTheme
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
