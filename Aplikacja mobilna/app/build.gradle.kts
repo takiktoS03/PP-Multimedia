@@ -61,7 +61,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.ui)
-    implementation(libs.androidx.material3)
+    implementation("androidx.compose.material3:material3:1.3.0")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.runtime.android)

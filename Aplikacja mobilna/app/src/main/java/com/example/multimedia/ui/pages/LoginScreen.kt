@@ -1,222 +1,189 @@
-package com.example.multimedia.ui.auth
+package com.example.multimedia.ui.pages
 
-import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import java.security.MessageDigest
+import androidx.compose.ui.unit.sp
+import com.example.multimedia.R
+import com.example.multimedia.ui.login.LoginState
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onContinueAsGuest: () -> Unit
+    state: LoginState,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onNameChange: (String) -> Unit,
+    onToggleMode: () -> Unit,
+    onSubmit: () -> Unit,
+    onGuestLogin: () -> Unit
 ) {
-    var email               by remember { mutableStateOf("") }
-    var password            by remember { mutableStateOf("") }
-    var confirmPassword     by remember { mutableStateOf("") }
-    var name                by remember { mutableStateOf("") }
-    var isRegistering       by remember { mutableStateOf(false) }
-    var error               by remember { mutableStateOf<String?>(null) }
-
-    // regex imienia: zaczyna się od wielkiej, tylko litery
-    val nameRegex     = remember { "^[A-Z][a-zA-Z]*\$".toRegex() }
-    // regex hasła: min. 8 znaków, co najmniej jedna duża i jedna mała litera
-    val passwordRegex = remember { "^(?=.*[a-z])(?=.*[A-Z]).{8,}\$".toRegex() }
-
-    // walidacje
-    val isEmailValid      = remember(email)    { android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() }
-    val isNameValid       = remember(name)     { nameRegex.matches(name) }
-    val isPasswordValid   = remember(password) { passwordRegex.matches(password) }
-    val doPasswordsMatch  = remember(password, confirmPassword) { password == confirmPassword }
-
-    Column(
-        modifier            = Modifier
+    Box(
+        modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Top,
+    ) {
+        // Tło
+        Image(
+            painter = painterResource(id = R.drawable.login_registartion),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(0.3f)
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White.copy(alpha = 0.1f))
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp)
+                .align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+        }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(30.dp),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text  = if (isRegistering) "Zarejestruj się" else "Zaloguj się",
-            style = MaterialTheme.typography.headlineSmall
+            text = if (state.isRegistering) "Rejestracja" else "Logowanie",
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 32.dp)
         )
-        Spacer(modifier = Modifier.height(24.dp))
 
-        if (isRegistering) {
-            OutlinedTextField(
-                value     = name,
-                onValueChange = { name = it },
-                label     = { Text("Imię") },
-                isError   = name.isNotEmpty() && !isNameValid,
-                modifier  = Modifier.fillMaxWidth()
+        if (state.isRegistering) {
+            StyledTextField(
+                value = state.name,
+                onValueChange = onNameChange,
+                placeholder = "Wpisz imię",
+                label = "Imię",
+                isError = state.nameError != null
             )
-            if (name.isNotEmpty() && !isNameValid) {
-                Text(
-                    text  = "Imię musi zaczynać się od wielkiej litery i zawierać tylko litery",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
         }
 
-        OutlinedTextField(
-            value          = email,
-            onValueChange  = { email = it },
-            label          = { Text("Email") },
-            isError        = email.isNotEmpty() && !isEmailValid,
-            modifier       = Modifier.fillMaxWidth()
+        StyledTextField(
+            value = state.email,
+            onValueChange = onEmailChange,
+            placeholder = "Wpisz e-mail",
+            label = "Adress e-mail",
+            isError = state.emailError != null
         )
-        if (email.isNotEmpty() && !isEmailValid) {
-            Text(
-                text  = "Podaj poprawny adres e-mail",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value              = password,
-            onValueChange      = { password = it },
-            label              = { Text("Hasło") },
-            visualTransformation = PasswordVisualTransformation(),
-            isError            = isRegistering && password.isNotEmpty() && !isPasswordValid,
-            modifier           = Modifier.fillMaxWidth()
+        StyledTextField(
+            value = state.password,
+            onValueChange = onPasswordChange,
+            placeholder = "Wpisz hasło",
+            label = "Hasło",
+            isError = state.passwordError != null,
+            isPassword = true
         )
-        if (isRegistering && password.isNotEmpty() && !isPasswordValid) {
-            Text(
-                text  = "Hasło musi mieć min. 8 znaków, jedną dużą i jedną małą literę",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+
+        if (state.isRegistering) {
+            Spacer(Modifier.height(12.dp))
+            StyledTextField(
+                value = state.confirmPassword,
+                onValueChange = onConfirmPasswordChange,
+                placeholder = "Powtórz hasło",
+                label = "Hasło",
+                isError = state.confirmPasswordError != null,
+                isPassword = true
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
 
-        if (isRegistering) {
-            OutlinedTextField(
-                value              = confirmPassword,
-                onValueChange      = { confirmPassword = it },
-                label              = { Text("Powtórz hasło") },
-                visualTransformation = PasswordVisualTransformation(),
-                isError            = confirmPassword.isNotEmpty() && !doPasswordsMatch,
-                modifier           = Modifier.fillMaxWidth()
-            )
-            if (confirmPassword.isNotEmpty() && !doPasswordsMatch) {
-                Text(
-                    text  = "Hasła nie są identyczne",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        } else {
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        val canSubmit = if (isRegistering) {
-            name.isNotBlank() && isNameValid &&
-                    email.isNotBlank() && isEmailValid &&
-                    password.isNotBlank() && isPasswordValid &&
-                    confirmPassword.isNotBlank() && doPasswordsMatch
-        } else {
-            email.isNotBlank() && isEmailValid &&
-                    password.isNotBlank()
-        }
+        Spacer(Modifier.height(24.dp))
 
         Button(
-            onClick = {
-                error = null
-                if (isRegistering) {
-                    // REJESTRACJA
-                    FirebaseAuth.getInstance()
-                        .createUserWithEmailAndPassword(email, password)
-                        .addOnSuccessListener {
-                            val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-                            Log.d("Register", "UID: $uid")
-
-                            // haszowanie hasła
-                            val passwordHash = hashPassword(password)
-                            val userData = hashMapOf(
-                                "email"         to email,
-                                "name"          to name,
-                                "password_hash" to passwordHash
-                            )
-
-                            FirebaseFirestore
-                                .getInstance("image-db")
-                                .collection("users")
-                                .document(uid)
-                                .set(userData)
-                                .addOnSuccessListener {
-                                    onLoginSuccess()
-                                }
-                                .addOnFailureListener {
-                                    error = "Błąd zapisu danych: ${it.message}"
-                                }
-                        }
-                        .addOnFailureListener {
-                            error = it.message
-                        }
-                } else {
-                    // LOGOWANIE
-                    FirebaseAuth.getInstance()
-                        .signInWithEmailAndPassword(email, password)
-                        .addOnSuccessListener { onLoginSuccess() }
-                        .addOnFailureListener {
-                            error = "Niepoprawny email lub hasło"
-                        }
-                }
-            },
-            enabled  = canSubmit,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(if (isRegistering) "Zarejestruj się" else "Zaloguj się")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        TextButton(onClick = {
-            isRegistering = !isRegistering
-            error = null
-        }) {
+            onClick = onSubmit,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
+            enabled = true
+        )
+             {
             Text(
-                if (isRegistering)
-                    "Masz już konto? Zaloguj się"
-                else
-                    "Nie masz konta? Zarejestruj się"
+                text = if (state.isRegistering) "Zarejestruj się" else "Zaloguj się",
+                color = Color.White,
+                fontSize = 16.sp
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = {
-            FirebaseAuth.getInstance()
-                .signInAnonymously()
-                .addOnSuccessListener { onContinueAsGuest() }
-                .addOnFailureListener {
-                    error = "Logowanie gościa nie powiodło się: ${it.message}"
-                }
-        }) {
-            Text("Kontynuuj jako gość")
+        Text(
+            text = if (state.isRegistering) "Posiadasz już konto ? " else "Nie posiadasz konta ?",
+            fontSize = 14.sp
+        )
+        Text(
+            text = if (state.isRegistering) "Logowanie" else "Rejestracja",
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF6200EE),
+            modifier = Modifier
+                .clickable { onToggleMode() }
+                .padding(top = 6.dp)
+        )
+
+        Spacer(modifier = Modifier.height(5.dp))
+
+        TextButton(onClick = onGuestLogin) {
+            Text("Kontynuuj jako gość",
+            color = Color(0xFF6200EE)
+            )
         }
 
-        error?.let {
+        state.error?.let {
             Spacer(modifier = Modifier.height(12.dp))
             Text(it, color = MaterialTheme.colorScheme.error)
         }
     }
 }
 
-// Funkcja pomocnicza do haszowania hasła SHA-256
-fun hashPassword(password: String): String {
-    val md = MessageDigest.getInstance("SHA-256")
-    val bytes = md.digest(password.toByteArray(Charsets.UTF_8))
-    return bytes.joinToString("") { "%02x".format(it) }
+@Composable
+private fun StyledTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    label: String,
+    isError: Boolean = false,
+    isPassword: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label       = { Text(label) },
+        placeholder = { Text(placeholder) },
+        singleLine  = true,
+        isError     = isError,
+        shape       = RoundedCornerShape(50),
+        visualTransformation =
+            if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        textStyle   = LocalTextStyle.current.copy(color = Color.Black),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+    )
 }
