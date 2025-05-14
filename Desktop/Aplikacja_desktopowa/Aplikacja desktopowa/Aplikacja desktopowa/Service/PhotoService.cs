@@ -1,4 +1,5 @@
-﻿using FireSharp;
+﻿using Aplikacja_desktopowa.Model;
+using FireSharp;
 using Google.Cloud.Firestore;
 using System;
 using System.Collections.Generic;
@@ -6,54 +7,64 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class PhotoService
+namespace Aplikacja_desktopowa.Service
 {
-    private readonly FirestoreDb _firestore;
-
-    public PhotoService()
+    public class PhotoService
     {
-        //string pathToKey = "image-management-cbaee-firebase-adminsdk-fbsvc-534514b3a5.json"; 
-        //Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", pathToKey);
+        private readonly FirestoreDb _firestore;
 
-        //_firestore = FirestoreDb.Create("image-management-cbaee", "image-db");
-    }
-
-
-
-    // do przetestowania:
-    public async Task AddPhotoAsync(string id, PhotoMetadata photo)
-    {
-        DocumentReference docRef = _firestore.Collection("photos").Document(id);
-        await docRef.SetAsync(photo);
-    }
-
-    public async Task<PhotoMetadata> GetPhotoAsync(string id)
-    {
-        DocumentReference docRef = _firestore.Collection("photos").Document(id);
-        DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-
-        if (snapshot.Exists)
+        public PhotoService()
         {
-            return snapshot.ConvertTo<PhotoMetadata>();
+            _firestore = FirebaseConfig.GetFirestoreDb();
         }
 
-        return null;
-    }
-
-    public async Task<List<PhotoMetadata>> GetAllPhotosAsync()
-    {
-        Query query = _firestore.Collection("photos");
-        QuerySnapshot snapshot = await query.GetSnapshotAsync();
-
-        List<PhotoMetadata> result = new List<PhotoMetadata>();
-        foreach (DocumentSnapshot doc in snapshot.Documents)
+        public async Task AddPhotoAsync(string id, PhotoMetadata photo)
         {
-            if (doc.Exists)
+            DocumentReference docRef = _firestore.Collection("photos").Document(id);
+            await docRef.SetAsync(photo);
+        }
+
+        public async Task<PhotoMetadata> GetPhotoAsync(string id)
+        {
+            DocumentReference docRef = _firestore.Collection("photos").Document(id);
+            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+            if (snapshot.Exists)
             {
-                result.Add(doc.ConvertTo<PhotoMetadata>());
+                return snapshot.ConvertTo<PhotoMetadata>();
             }
+
+            return null;
         }
 
-        return result;
+        public async Task<List<PhotoMetadata>> GetAllPhotosAsync()
+        {
+            Query query = _firestore.Collection("photos");
+            QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+            List<PhotoMetadata> result = new List<PhotoMetadata>();
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                if (doc.Exists)
+                {
+                    result.Add(doc.ConvertTo<PhotoMetadata>());
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<List<PhotoMetadata>> GetPhotosByIdsAsync(List<string> photoIds)
+        {
+            var result = new List<PhotoMetadata>();
+            foreach (var id in photoIds)
+            {
+                var photo = await GetPhotoAsync(id);
+                if (photo != null)
+                    result.Add(photo);
+            }
+            return result;
+        }
+
     }
 }

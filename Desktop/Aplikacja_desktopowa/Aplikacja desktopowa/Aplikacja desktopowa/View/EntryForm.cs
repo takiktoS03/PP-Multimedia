@@ -5,9 +5,13 @@ namespace Aplikacja_desktopowa.View
 {
     public partial class EntryForm : Form
     {
+        private Button buttonLogin;
+        private Button buttonRegister;
+
         public EntryForm()
         {
             InitializeComponent();
+            this.FormClosed += EntryForm_FormClosed;
         }
 
         private void buttonLogin_Click(object sender, EventArgs e)
@@ -24,8 +28,11 @@ namespace Aplikacja_desktopowa.View
             this.Hide();
         }
 
-        private System.Windows.Forms.Button buttonLogin;
-        private System.Windows.Forms.Button buttonRegister;
+        private void EntryForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
+        }
+
 
         private void InitializeComponent()
         {

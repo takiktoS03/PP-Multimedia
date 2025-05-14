@@ -1,33 +1,58 @@
-﻿using Google.Cloud.Firestore;
-using System;
+﻿using Aplikacja_desktopowa.Model;
+using Aplikacja_desktopowa.Service;
 using System.Collections.Generic;
-using System.IO;
+using System.Drawing;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
-public class PhotoViewModel
+namespace Aplikacja_desktopowa.ViewModel
 {
-    private readonly FirestoreDb _firestore;
-
-    public PhotoViewModel()
+    public class PhotoViewModel
     {
-        string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "image-management-cbaee-firebase-adminsdk-fbsvc-5499d8a881.json");
-        Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
-        _firestore = FirestoreDb.Create("apka_desktop_id");
-    }
+        private readonly PhotoService _photoService;
 
-    public async Task<List<PhotoMetadata>> GetAllPhotosAsync()
-    {
-        var snapshot = await _firestore.Collection("photos").GetSnapshotAsync();
-        var photos = new List<PhotoMetadata>();
-
-        foreach (var doc in snapshot.Documents)
+        public PhotoViewModel()
         {
-            if (doc.Exists)
-            {
-                photos.Add(doc.ConvertTo<PhotoMetadata>());
-            }
+            _photoService = new PhotoService();
         }
 
-        return photos;
+        public async Task<List<PhotoMetadata>> GetAllPhotosAsync()
+        {
+            return await _photoService.GetAllPhotosAsync();
+        }
+
+        public void ShowPhotosOnPanel(IEnumerable<PhotoMetadata> photos, Control parent, int startY = 10)
+        {
+            int y = startY;
+            foreach (var photo in photos)
+            {
+                var pictureBox = new PictureBox
+                {
+                    Location = new Point(10, y),
+                    Size = new Size(100, 100),
+                    SizeMode = PictureBoxSizeMode.Zoom
+                };
+
+                try
+                {
+                    pictureBox.Load(photo.FilePath);
+                }
+                catch
+                {
+                    // Wyświetl komunikat o błędzie na ekranie
+                    var errorLabel = new Label
+                    {
+                        Text = $"Błąd: Nie można załadować pliku: {photo.FilePath}",
+                        ForeColor = Color.Red,
+                        Location = new Point(10, y + 40),
+                        Width = 300
+                    };
+                    parent.Controls.Add(errorLabel);
+                }
+
+                parent.Controls.Add(pictureBox);
+                y += 110;
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@ namespace Aplikacja_desktopowa.View
         private TextBox textBoxEmail;
         private TextBox textBoxPassword;
         private Button buttonLogin;
+        private Button buttonBack;
         private TextBox textBoxLogInfo;
         private Label labelEmail;
         private Label labelPassword;
@@ -34,8 +35,10 @@ namespace Aplikacja_desktopowa.View
 
         private void LoginForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Application.Exit(); // Ensure the application exits when this form is closed
+            Application.Exit();
         }
+
+
 
         private async void buttonLogin_Click(object sender, EventArgs e)
         {
@@ -57,10 +60,16 @@ namespace Aplikacja_desktopowa.View
 
             textBoxLogInfo.Text = $"Zalogowano jako: {user.Name}";
 
-            // przejscie do innego okna
-            Form2 form = new Form2();
-            form.Show();
-            //this.Hide();
+            UserForm userForm = new UserForm();
+            userForm.Show();
+            this.Hide();
+        }
+
+        private void buttonBack_Click(object sender, EventArgs e)
+        {
+            var entryForm = new EntryForm();
+            entryForm.Show();
+            this.Hide();
         }
 
         private void InitializeComponent()
@@ -68,6 +77,7 @@ namespace Aplikacja_desktopowa.View
             this.textBoxEmail = new System.Windows.Forms.TextBox();
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.buttonLogin = new System.Windows.Forms.Button();
+            this.buttonBack = new System.Windows.Forms.Button();
             this.textBoxLogInfo = new System.Windows.Forms.TextBox();
             this.labelEmail = new System.Windows.Forms.Label();
             this.labelPassword = new System.Windows.Forms.Label();
@@ -97,6 +107,16 @@ namespace Aplikacja_desktopowa.View
             this.buttonLogin.Text = "Log";
             this.buttonLogin.UseVisualStyleBackColor = true;
             this.buttonLogin.Click += new System.EventHandler(this.buttonLogin_Click);
+            // 
+            // buttonBack
+            // 
+            this.buttonBack.Location = new System.Drawing.Point(200, 117);
+            this.buttonBack.Name = "buttonBack";
+            this.buttonBack.Size = new System.Drawing.Size(75, 23);
+            this.buttonBack.TabIndex = 6;
+            this.buttonBack.Text = "Powrót";
+            this.buttonBack.UseVisualStyleBackColor = true;
+            this.buttonBack.Click += new System.EventHandler(this.buttonBack_Click);
             // 
             // textBoxLogInfo
             // 
@@ -131,37 +151,12 @@ namespace Aplikacja_desktopowa.View
             this.Controls.Add(this.labelEmail);
             this.Controls.Add(this.textBoxLogInfo);
             this.Controls.Add(this.buttonLogin);
+            this.Controls.Add(this.buttonBack);
             this.Controls.Add(this.textBoxEmail);
             this.Controls.Add(this.textBoxPassword);
             this.Name = "LoginForm";
             this.ResumeLayout(false);
             this.PerformLayout();
         }
-
-        //private async void buttonLogin_Click_1(object sender, EventArgs e)
-        //{
-        //    string email = textBoxEmail.Text.Trim();
-        //    string password = textBoxPassword.Text.Trim();
-
-        //    var user = await userService.GetUserByEmailAsync(email);
-        //    if (user == null)
-        //    {
-        //        textBoxLogInfo.Text = "Nie znaleziono użytkownika.";
-        //        return;
-        //    }
-
-        //    if (user.PasswordHash != password)
-        //    {
-        //        textBoxLogInfo.Text = "Błędne hasło.";
-        //        return;
-        //    }
-
-        //    textBoxLogInfo.Text = $"Zalogowano jako: {user.Name}";
-
-        //    // przejscie do innego okna
-        //    Form2 form = new Form2();
-        //    form.Show();
-        //    //this.Hide();
-        //}
     }
 }

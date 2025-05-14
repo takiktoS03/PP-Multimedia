@@ -10,6 +10,7 @@ namespace Aplikacja_desktopowa.View
         private TextBox textBoxPassword;
         private TextBox textBoxName;
         private Button buttonRegister;
+        private Button buttonBack;
         private TextBox textBoxRegisterInfo;
         private Label labelEmail;
         private Label labelPassword;
@@ -26,7 +27,7 @@ namespace Aplikacja_desktopowa.View
 
         private void RegisterForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Application.Exit(); // Ensure the application exits when this form is closed
+            Application.Exit();
         }
 
         private async void buttonRegister_Click(object sender, EventArgs e)
@@ -43,8 +44,7 @@ namespace Aplikacja_desktopowa.View
 
             try
             {
-                // Placeholder for registration logic
-                // You can implement a method in UserService to save the user to Firestore
+                // TODO Registration logic
                 textBoxRegisterInfo.Text = "Rejestracja zakoñczona sukcesem.";
             }
             catch (Exception ex)
@@ -53,12 +53,20 @@ namespace Aplikacja_desktopowa.View
             }
         }
 
+        private void buttonBack_Click(object sender, EventArgs e)
+        {
+            var entryForm = new EntryForm();
+            entryForm.Show();
+            this.Hide();
+        }
+
         private void InitializeComponent()
         {
             this.textBoxEmail = new System.Windows.Forms.TextBox();
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.textBoxName = new System.Windows.Forms.TextBox();
             this.buttonRegister = new System.Windows.Forms.Button();
+            this.buttonBack = new System.Windows.Forms.Button();
             this.textBoxRegisterInfo = new System.Windows.Forms.TextBox();
             this.labelEmail = new System.Windows.Forms.Label();
             this.labelPassword = new System.Windows.Forms.Label();
@@ -96,6 +104,16 @@ namespace Aplikacja_desktopowa.View
             this.buttonRegister.Text = "Register";
             this.buttonRegister.UseVisualStyleBackColor = true;
             this.buttonRegister.Click += new System.EventHandler(this.buttonRegister_Click);
+            // 
+            // buttonBack
+            // 
+            this.buttonBack.Location = new System.Drawing.Point(200, 150);
+            this.buttonBack.Name = "buttonBack";
+            this.buttonBack.Size = new System.Drawing.Size(75, 23);
+            this.buttonBack.TabIndex = 8;
+            this.buttonBack.Text = "Powrót";
+            this.buttonBack.UseVisualStyleBackColor = true;
+            this.buttonBack.Click += new System.EventHandler(this.buttonBack_Click);
             // 
             // textBoxRegisterInfo
             // 
@@ -140,6 +158,7 @@ namespace Aplikacja_desktopowa.View
             this.Controls.Add(this.labelEmail);
             this.Controls.Add(this.textBoxRegisterInfo);
             this.Controls.Add(this.buttonRegister);
+            this.Controls.Add(this.buttonBack);
             this.Controls.Add(this.textBoxName);
             this.Controls.Add(this.textBoxPassword);
             this.Controls.Add(this.textBoxEmail);

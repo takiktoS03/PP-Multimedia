@@ -19,11 +19,7 @@ namespace Aplikacja_desktopowa.Service
 
         public UserService()
         {
-            string path = "image-management-cbaee-firebase-adminsdk-fbsvc-534514b3a5.json";
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
-
-            // Tworzymy klienta Firestore (domyślna baza danych)
-            _firestore = FirestoreDb.Create("image-management-cbaee");
+            _firestore = FirebaseConfig.GetFirestoreDb();
         }
 
         public async Task<User> GetUserByEmailAsync(string email)
@@ -45,7 +41,6 @@ namespace Aplikacja_desktopowa.Service
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as needed
                 Console.WriteLine($"An error occurred: {ex.Message}");
                 return null;
             }
