@@ -45,5 +45,29 @@ namespace Aplikacja_desktopowa.Service
                 return null;
             }
         }
+
+        public async Task<User> GetUserByUsernameAsync(string username)
+        {
+            try
+            {
+                Query query = _firestore.Collection("users").WhereEqualTo("username", username);
+                QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+                foreach (var doc in snapshot.Documents)
+                {
+                    if (doc.Exists)
+                    {
+                        return doc.ConvertTo<User>();
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return null;
+            }
+        }
     }
 }

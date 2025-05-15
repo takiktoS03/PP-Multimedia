@@ -16,8 +16,8 @@ namespace Aplikacja_desktopowa
         [STAThread]
         static async Task Main()
         {
-            FirestoreCopier copier = new FirestoreCopier();
-            await copier.CopyAsync();
+            //FirestoreCopier copier = new FirestoreCopier();
+            //await copier.CopyAsync();
             FirebaseConfig.Init();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

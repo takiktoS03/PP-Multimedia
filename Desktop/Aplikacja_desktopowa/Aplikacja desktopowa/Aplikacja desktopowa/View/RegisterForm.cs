@@ -1,5 +1,8 @@
 using Aplikacja_desktopowa.Service;
 using System;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View
@@ -44,12 +47,75 @@ namespace Aplikacja_desktopowa.View
 
             try
             {
-                // TODO Registration logic
+
+                bool isEmailValid = await CheckEmail(email);
+                if (!isEmailValid) return;
+
+                bool isUsernameValid = await CheckName(name);
+                if (!isUsernameValid) return;
+
+                bool isPasswordValid = CheckPassword(password);
+                if (!isPasswordValid) return;
+
                 textBoxRegisterInfo.Text = "Rejestracja zakoñczona sukcesem.";
             }
             catch (Exception ex)
             {
                 textBoxRegisterInfo.Text = $"B³¹d: {ex.Message}";
+            }
+        }
+
+        private async Task<bool> CheckEmail(string email)
+        {
+            string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            if (!Regex.IsMatch(email, emailPattern))
+            {
+                textBoxRegisterInfo.Text = "Niepoprawny format adresu e-mail.";
+                return false;
+            }
+
+            var existingUser = await userService.GetUserByEmailAsync(email);
+
+            if (existingUser != null)
+            {
+                textBoxRegisterInfo.Text = "E-mail jest ju¿ zarejestrowany.";
+                return false; 
+            }
+            else
+            {
+                return true; 
+            }
+        }
+
+        private bool CheckPassword(string password)
+        {
+            if (password.Length < 8)
+            {
+                textBoxRegisterInfo.Text = "Has³o musi mieæ co najmniej 8 znaków.";
+                return false;
+            }
+
+            if (!password.Any(char.IsUpper))
+            {
+                textBoxRegisterInfo.Text = "Has³o musi zawieraæ co najmniej jedn¹ wielk¹ literê.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> CheckName(string username)
+        {
+            var existingUser = await userService.GetUserByUsernameAsync(username);
+
+            if (existingUser != null)
+            {
+                Console.WriteLine("Nazwa u¿ytkownika jest ju¿ zajêta.");
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
