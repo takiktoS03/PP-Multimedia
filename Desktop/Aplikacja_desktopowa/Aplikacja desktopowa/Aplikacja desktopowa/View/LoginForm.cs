@@ -74,6 +74,7 @@ namespace Aplikacja_desktopowa.View
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoginForm));
             this.textBoxEmail = new System.Windows.Forms.TextBox();
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.buttonLogin = new System.Windows.Forms.Button();
@@ -85,14 +86,14 @@ namespace Aplikacja_desktopowa.View
             // 
             // textBoxEmail
             // 
-            this.textBoxEmail.Location = new System.Drawing.Point(100, 30);
+            this.textBoxEmail.Location = new System.Drawing.Point(843, 294);
             this.textBoxEmail.Name = "textBoxEmail";
             this.textBoxEmail.Size = new System.Drawing.Size(200, 20);
             this.textBoxEmail.TabIndex = 0;
             // 
             // textBoxPassword
             // 
-            this.textBoxPassword.Location = new System.Drawing.Point(100, 70);
+            this.textBoxPassword.Location = new System.Drawing.Point(843, 334);
             this.textBoxPassword.Name = "textBoxPassword";
             this.textBoxPassword.Size = new System.Drawing.Size(200, 20);
             this.textBoxPassword.TabIndex = 1;
@@ -100,36 +101,42 @@ namespace Aplikacja_desktopowa.View
             // 
             // buttonLogin
             // 
-            this.buttonLogin.Location = new System.Drawing.Point(100, 117);
+            this.buttonLogin.BackColor = System.Drawing.Color.MediumPurple;
+            this.buttonLogin.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.buttonLogin.ForeColor = System.Drawing.SystemColors.ControlLight;
+            this.buttonLogin.Location = new System.Drawing.Point(776, 381);
             this.buttonLogin.Name = "buttonLogin";
-            this.buttonLogin.Size = new System.Drawing.Size(75, 23);
+            this.buttonLogin.Size = new System.Drawing.Size(192, 64);
             this.buttonLogin.TabIndex = 2;
             this.buttonLogin.Text = "Log";
-            this.buttonLogin.UseVisualStyleBackColor = true;
+            this.buttonLogin.UseVisualStyleBackColor = false;
             this.buttonLogin.Click += new System.EventHandler(this.buttonLogin_Click);
             // 
             // buttonBack
             // 
-            this.buttonBack.Location = new System.Drawing.Point(200, 117);
+            this.buttonBack.BackColor = System.Drawing.Color.MediumPurple;
+            this.buttonBack.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.buttonBack.ForeColor = System.Drawing.SystemColors.ControlLight;
+            this.buttonBack.Location = new System.Drawing.Point(1039, 381);
             this.buttonBack.Name = "buttonBack";
-            this.buttonBack.Size = new System.Drawing.Size(75, 23);
+            this.buttonBack.Size = new System.Drawing.Size(192, 64);
             this.buttonBack.TabIndex = 6;
             this.buttonBack.Text = "Powrót";
-            this.buttonBack.UseVisualStyleBackColor = true;
+            this.buttonBack.UseVisualStyleBackColor = false;
             this.buttonBack.Click += new System.EventHandler(this.buttonBack_Click);
             // 
             // textBoxLogInfo
             // 
-            this.textBoxLogInfo.Location = new System.Drawing.Point(315, 29);
+            this.textBoxLogInfo.Location = new System.Drawing.Point(1058, 293);
             this.textBoxLogInfo.Name = "textBoxLogInfo";
             this.textBoxLogInfo.ReadOnly = true;
-            this.textBoxLogInfo.Size = new System.Drawing.Size(147, 20);
+            this.textBoxLogInfo.Size = new System.Drawing.Size(173, 20);
             this.textBoxLogInfo.TabIndex = 3;
             // 
             // labelEmail
             // 
             this.labelEmail.AutoSize = true;
-            this.labelEmail.Location = new System.Drawing.Point(30, 33);
+            this.labelEmail.Location = new System.Drawing.Point(777, 294);
             this.labelEmail.Name = "labelEmail";
             this.labelEmail.Size = new System.Drawing.Size(35, 13);
             this.labelEmail.TabIndex = 4;
@@ -138,15 +145,16 @@ namespace Aplikacja_desktopowa.View
             // labelPassword
             // 
             this.labelPassword.AutoSize = true;
-            this.labelPassword.Location = new System.Drawing.Point(30, 73);
+            this.labelPassword.Location = new System.Drawing.Point(773, 337);
             this.labelPassword.Name = "labelPassword";
-            this.labelPassword.Size = new System.Drawing.Size(36, 13);
+            this.labelPassword.Size = new System.Drawing.Size(39, 13);
             this.labelPassword.TabIndex = 5;
             this.labelPassword.Text = "Hasło:";
             // 
             // LoginForm
             // 
-            this.ClientSize = new System.Drawing.Size(848, 441);
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1243, 718);
             this.Controls.Add(this.labelPassword);
             this.Controls.Add(this.labelEmail);
             this.Controls.Add(this.textBoxLogInfo);
@@ -157,6 +165,7 @@ namespace Aplikacja_desktopowa.View
             this.Name = "LoginForm";
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
     }
 }
