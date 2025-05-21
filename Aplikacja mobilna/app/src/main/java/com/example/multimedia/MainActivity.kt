@@ -26,7 +26,6 @@ import com.example.multimedia.ui.theme.MultimediaTheme
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 @OptIn(ExperimentalMaterial3Api::class)

@@ -27,54 +27,77 @@ import kotlinx.coroutines.launch
 import coil.compose.rememberAsyncImagePainter
 import com.example.multimedia.data.model.Photo
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.Channel
 
 @Composable
 fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
     val photos by viewModel.photos.observeAsState(emptyList())
 
     var showDialog by remember { mutableStateOf(false) }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val snackbarMessages = remember { Channel<String>(Channel.UNLIMITED) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        for (message in snackbarMessages) {
+            snackbarHostState.showSnackbar(message)
+        }
+    }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val pickImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let {
-            selectedImageUri = it
+    val selectedImageUris = remember { mutableStateListOf<Uri>() }
+    val pickImagesLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            selectedImageUris.clear()
+            selectedImageUris.addAll(uris)
             showDialog = true
         }
     }
 
-    selectedImageUri?.let { uri ->
+    selectedImageUris?.let { uri ->
         if (showDialog) {
             PhotoUploadDialog(
-                onDismiss = { showDialog = false },
+                onDismiss = {
+                    showDialog = false
+                    selectedImageUris.clear() },
                 onSubmit = { title, desc, loc, tags ->
                     showDialog = false
+                    val failedUris = mutableListOf<Uri>()
 
-                    val locationFromExif = getExifLocation(context, uri) ?: ""
-                    val location = if (loc.isNotBlank()) loc else locationFromExif
+                    coroutineScope.launch {
+                        selectedImageUris.forEach { uri ->
+                            val success = CompletableDeferred<Boolean>()
+                            val locationFromExif = getExifLocation(context, uri) ?: ""
+                            val location = if (loc.isNotBlank()) loc else locationFromExif
 
-                    viewModel.uploadPhoto(
-                        uri = uri,
-                        title = title,
-                        description = desc,
-                        location = location,
-                        tags = tags,
-                        onSuccess = {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Zdjęcie przesłane!")
-                            }
-                        },
-                        onFailure = { error ->
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Błąd: ${error.localizedMessage}")
+                            viewModel.uploadPhoto(
+                                uri = uri,
+                                title = title,
+                                description = desc,
+                                location = location,
+                                tags = tags,
+                                onSuccess = { success.complete(true) },
+                                onFailure = {
+                                    failedUris.add(uri)
+                                    success.complete(false)
+                                }
+                            )
+                            success.await()
+                        }
+                        if (failedUris.isEmpty()) {
+                            snackbarMessages.trySend("Wszystkie zdjęcia przesłane!")
+                        } else {
+                            failedUris.forEach {
+                                snackbarMessages.trySend("Błąd przesyłania: ${it.lastPathSegment}")
                             }
                         }
-                    )
+                        selectedImageUris.clear()
+                    }
                 }
+
             )
 
         }
@@ -97,12 +120,12 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
             )
 
             Button(
-                onClick = { pickImageLauncher.launch("image/*") },
+                onClick = { pickImagesLauncher.launch("image/*") },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(8.dp)
             ) {
-                Text("Dodaj zdjęcie")
+                Text("Dodaj zdjęcia")
             }
 
             LazyColumn {
