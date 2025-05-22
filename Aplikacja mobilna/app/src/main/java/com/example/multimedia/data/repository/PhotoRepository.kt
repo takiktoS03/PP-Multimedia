@@ -65,4 +65,23 @@ class PhotoRepository @Inject constructor(
         return liveData
     }
 
+    fun deletePhoto(photo: Photo, onComplete: () -> Unit, onError: (Exception) -> Unit) {
+        firestore.collection("photos").document(photo.id ?: "")
+            .delete()
+            .addOnSuccessListener {
+                firebaseStorage.getReferenceFromUrl(photo.file_path)
+                    .delete()
+                    .addOnSuccessListener { onComplete() }
+                    .addOnFailureListener { onError(it) }
+            }
+            .addOnFailureListener { onError(it) }
+    }
+
+    fun updatePhoto(photo: Photo) {
+        firestore.collection("photos")
+            .document(photo.id)
+            .set(photo)
+    }
+
+
 }

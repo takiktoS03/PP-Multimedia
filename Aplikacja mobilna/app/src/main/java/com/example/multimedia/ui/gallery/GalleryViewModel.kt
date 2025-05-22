@@ -42,4 +42,14 @@ class GalleryViewModel @Inject constructor(
         repository.uploadPhoto(uri, meta, onSuccess, onFailure)
     }
 
+    fun deletePhoto(photo: Photo) {
+        repository.deletePhoto(photo,
+            onComplete = { /* sukces, np. odświeżenie UI */ },
+            onError = { e -> /* obsługa błędu */ }
+        )
+    }
+
+    fun updatePhoto(photo: Photo) {
+        repository.updatePhoto(photo)
+    }
 }
