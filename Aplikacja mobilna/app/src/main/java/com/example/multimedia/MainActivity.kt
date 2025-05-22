@@ -22,26 +22,34 @@ import com.example.multimedia.ui.login.LoginViewModel
 import com.example.multimedia.ui.pages.AccountScreen
 import com.example.multimedia.ui.pages.HomeScreen
 import com.example.multimedia.ui.pages.LoginScreen
+import com.example.multimedia.ui.pages.VerificationScreen
 import com.example.multimedia.ui.theme.MultimediaTheme
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import dagger.hilt.android.AndroidEntryPoint
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.appcheck.FirebaseAppCheck
 
 @AndroidEntryPoint
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+            DebugAppCheckProviderFactory.getInstance()
+        )
+
         setContent {
             MultimediaTheme {
                 val firebaseUser = FirebaseAuth.getInstance().currentUser
-
+                val navController = rememberNavController()
                 if (firebaseUser == null) {
                     val loginViewModel = remember { LoginViewModel() }
                     val state by loginViewModel.state.collectAsState()
 
                     LoginScreen(
+                        navController = navController,
                         state = state,
                         onEmailChange = loginViewModel::onEmailChange,
                         onPasswordChange = loginViewModel::onPasswordChange,
@@ -52,16 +60,21 @@ class MainActivity : ComponentActivity() {
                             if (state.isRegistering) {
                                 lifecycleScope.launch {
                                     loginViewModel.register(
-                                        onSuccess = { loginViewModel.resetForm()
-                                            recreate() },
+                                        navController = navController,
+                                        onSuccess = {
+                                            loginViewModel.resetForm()
+                                            recreate()
+                                        },
                                         onFailure = loginViewModel::setError
                                     )
                                 }
                             } else {
                                 lifecycleScope.launch {
                                     loginViewModel.login(
-                                        onSuccess = { loginViewModel.resetForm()
-                                            recreate() },
+                                        onSuccess = {
+                                            loginViewModel.resetForm()
+                                            recreate()
+                                        },
                                         onFailure = loginViewModel::setError
                                     )
                                 }
@@ -183,6 +196,11 @@ class MainActivity : ComponentActivity() {
                                         FirebaseAuth.getInstance().signOut()
                                     })
                                 }
+                                composable("verify/{userId}") { backStackEntry ->
+                                    val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                                    VerificationScreen(navController, userId)
+                                }
+
                             }
                         }
                     }

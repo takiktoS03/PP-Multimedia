@@ -20,11 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.multimedia.R
 import com.example.multimedia.ui.login.LoginState
+import androidx.navigation.NavController
 
 @Composable
 fun LoginScreen(
     state: LoginState,
     onEmailChange: (String) -> Unit,
+    navController: NavController,
     onPasswordChange: (String) -> Unit,
     onConfirmPasswordChange: (String) -> Unit,
     onNameChange: (String) -> Unit,

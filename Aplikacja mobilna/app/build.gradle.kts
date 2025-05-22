@@ -74,6 +74,14 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.exifinterface)
+    implementation(libs.firebase.functions.ktx)
+    implementation(libs.google.firebase.functions.ktx)
+
+    implementation(libs.firebase.functions.ktx.v2040)
+    implementation(libs.google.firebase.auth.ktx)
+    implementation(libs.com.google.firebase.firebase.firestore.ktx)
+    implementation(libs.okhttp)
+
 
     // Multimedia / media3
     implementation(libs.androidx.media3.common.ktx)
@@ -81,6 +89,7 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     implementation(libs.google.firebase.storage.ktx)
+    implementation(libs.firebase.appcheck.debug)
     kapt(libs.hilt.compiler)
 
     // Image

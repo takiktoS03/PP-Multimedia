@@ -1,0 +1,66 @@
+[debug] [2025-05-21T22:26:52.812Z] ----------------------------------------------------------------------
+[debug] [2025-05-21T22:26:52.814Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Bigajka\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init functions
+[debug] [2025-05-21T22:26:52.815Z] CLI Version:   14.4.0
+[debug] [2025-05-21T22:26:52.815Z] Platform:      win32
+[debug] [2025-05-21T22:26:52.815Z] Node Version:  v22.16.0
+[debug] [2025-05-21T22:26:52.815Z] Time:          Thu May 22 2025 00:26:52 GMT+0200 (czas środkowoeuropejski letni)
+[debug] [2025-05-21T22:26:52.815Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-05-21T22:26:53.020Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-05-21T22:26:53.020Z] > authorizing via signed-in user (bigaj.julia@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\Bigajka\Desktop\ProjektPP\PP-Multimedia\Aplikacja mobilna
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2025-05-21T22:26:55.720Z] Using project from CLI flag: image-management-cbaee
+[debug] [2025-05-21T22:26:55.721Z] Checked if tokens are valid: true, expires at: 1747868365278
+[debug] [2025-05-21T22:26:55.721Z] Checked if tokens are valid: true, expires at: 1747868365278
+[debug] [2025-05-21T22:26:55.722Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/image-management-cbaee [none]
+[debug] [2025-05-21T22:26:56.072Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/image-management-cbaee 200
+[debug] [2025-05-21T22:26:56.072Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/image-management-cbaee {"projectId":"image-management-cbaee","projectNumber":"554940579754","displayName":"Image management","name":"projects/image-management-cbaee","resources":{"hostingSite":"image-management-cbaee"},"state":"ACTIVE","etag":"1_d27ddb9d-40cc-46b8-8f0b-16fb92140b47"}
+[info] i  Using project image-management-cbaee (Image management) 
+[info] 
+=== Functions Setup
+[debug] [2025-05-21T22:26:56.075Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-05-21T22:26:56.075Z] > authorizing via signed-in user (bigaj.julia@gmail.com)
+[debug] [2025-05-21T22:26:56.076Z] [iam] checking project image-management-cbaee for permissions ["firebase.projects.get"]
+[debug] [2025-05-21T22:26:56.076Z] Checked if tokens are valid: true, expires at: 1747868365278
+[debug] [2025-05-21T22:26:56.076Z] Checked if tokens are valid: true, expires at: 1747868365278
+[debug] [2025-05-21T22:26:56.076Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/image-management-cbaee:testIamPermissions [none]
+[debug] [2025-05-21T22:26:56.076Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/image-management-cbaee:testIamPermissions x-goog-quota-user=projects/image-management-cbaee
+[debug] [2025-05-21T22:26:56.076Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/image-management-cbaee:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-05-21T22:26:56.813Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/image-management-cbaee:testIamPermissions 200
+[debug] [2025-05-21T22:26:56.813Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/image-management-cbaee:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-05-21T22:26:56.813Z] Checked if tokens are valid: true, expires at: 1747868365278
+[debug] [2025-05-21T22:26:56.813Z] Checked if tokens are valid: true, expires at: 1747868365278
+[debug] [2025-05-21T22:26:56.813Z] Checked if tokens are valid: true, expires at: 1747868365278
+[debug] [2025-05-21T22:26:56.813Z] Checked if tokens are valid: true, expires at: 1747868365278
+[debug] [2025-05-21T22:26:56.814Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/image-management-cbaee/services/cloudfunctions.googleapis.com [none]
+[debug] [2025-05-21T22:26:56.814Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/image-management-cbaee/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/image-management-cbaee
+[debug] [2025-05-21T22:26:56.815Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/image-management-cbaee/services/runtimeconfig.googleapis.com [none]
+[debug] [2025-05-21T22:26:56.815Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/image-management-cbaee/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/image-management-cbaee
+[debug] [2025-05-21T22:26:57.743Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/image-management-cbaee/services/runtimeconfig.googleapis.com 200
+[debug] [2025-05-21T22:26:57.743Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/image-management-cbaee/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2025-05-21T22:26:57.752Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/image-management-cbaee/services/cloudfunctions.googleapis.com 200
+[debug] [2025-05-21T22:26:57.752Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/image-management-cbaee/services/cloudfunctions.googleapis.com [omitted]
+[info] 
+Detected existing codebase(s): default
+

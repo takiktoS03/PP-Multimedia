@@ -1,9 +1,12 @@
 package com.example.multimedia.ui.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
+import com.example.multimedia.data.repository.VerificationRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
@@ -58,7 +61,11 @@ class LoginViewModel : ViewModel() {
         )
     }
 
-    suspend fun register(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    suspend fun register(
+        navController: NavController,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         val s = state.value
 
         if (!s.canSubmit) {
@@ -72,11 +79,13 @@ class LoginViewModel : ViewModel() {
                 .await()
 
             val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return onFailure("Brak UID")
+
             val userData = mapOf(
                 "email" to s.email,
                 "name" to s.name,
                 "password_hash" to hashPassword(s.password),
-                "created_at" to FieldValue.serverTimestamp()
+                "created_at" to FieldValue.serverTimestamp(),
+                "isVerified" to false
             )
 
             FirebaseFirestore.getInstance("image-db")
@@ -85,17 +94,50 @@ class LoginViewModel : ViewModel() {
                 .set(userData)
                 .await()
 
-            onSuccess()
+            Log.d("Register", "Utworzono użytkownika w Firestore: $uid")
+
+            val repo = VerificationRepository()
+            var codeSent = false
+            val latch = kotlinx.coroutines.CompletableDeferred<Unit>()
+
+            Log.d("Register", "Wywołanie sendVerificationCode()")
+
+            Log.d("Register", "🔸 Repo utworzone, startujemy wysyłkę kodu")
+
+            try {
+                repo.sendVerificationCode(uid, s.email) { success ->
+                    Log.d("Register", "✅ Callback z repo: success = $success")
+                    codeSent = success
+                    latch.complete(Unit)
+                }
+            } catch (e: Exception) {
+                Log.e("Register", "❌ Exception: ${e.message}")
+                onFailure("Błąd przy wysyłaniu kodu: ${e.message}")
+                return
+            }
+
+            Log.d("Register", "⏳ Oczekiwanie na latch")
+            latch.await()
+
+
+            if (codeSent) {
+                Log.d("Register", "Kod wysłany – success")
+                onSuccess()
+            } else {
+                Log.e("Register", "Nie udało się wysłać kodu")
+                onFailure("Nie udało się wysłać kodu weryfikacyjnego")
+            }
+
         } catch (e: Exception) {
             val errorMessage = if (e.message?.contains("email address is already in use") == true) {
                 "Podany adres e-mail jest już zarejestrowany"
             } else {
                 e.message ?: "Błąd rejestracji"
             }
+            Log.e("Register", "Wyjątek: $errorMessage")
             onFailure(errorMessage)
         }
     }
-
 
     suspend fun login(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         try {
