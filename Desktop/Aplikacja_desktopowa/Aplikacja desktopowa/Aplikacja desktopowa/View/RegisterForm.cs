@@ -1,6 +1,11 @@
+using Aplikacja_desktopowa.Model;
 using Aplikacja_desktopowa.Service;
+using Google.Cloud.Firestore;
+using Org.BouncyCastle.Crypto.Generators;
 using System;
 using System.Linq;
+using System.Net.Mail;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -56,6 +61,24 @@ namespace Aplikacja_desktopowa.View
 
                 bool isPasswordValid = CheckPassword(password);
                 if (!isPasswordValid) return;
+
+                string code = new Random().Next(100000, 999999).ToString();
+
+                var user = new User
+                {
+                    Email = email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                    Name = name,
+                    Role = "user",
+                    IsVerified = false,
+                    VerificationCode = code,
+                    CreatedAt = Timestamp.GetCurrentTimestamp(),
+                    UpdatedAt = null
+                };
+
+                await userService.AddUserAsync(user);
+                await SendVerificationEmail(email, code);
+                new VerifyEmailForm(email).Show();
 
                 textBoxRegisterInfo.Text = "Rejestracja zakoñczona sukcesem.";
             }
@@ -116,6 +139,20 @@ namespace Aplikacja_desktopowa.View
             else
             {
                 return true;
+            }
+        }
+
+        private async Task SendVerificationEmail(string email, string code)
+        {
+            var message = new MailMessage("twojemail@gmail.com", email);
+            message.Subject = "Kod weryfikacyjny";
+            message.Body = $"Twój kod weryfikacyjny to: {code}";
+
+            using (var smtp = new SmtpClient("smtp.gmail.com", 587))
+            {
+                smtp.Credentials = new NetworkCredential("twojemail@gmail.com", "app_password"); 
+                smtp.EnableSsl = true;
+                await smtp.SendMailAsync(message);
             }
         }
 
@@ -186,7 +223,7 @@ namespace Aplikacja_desktopowa.View
             this.textBoxRegisterInfo.Location = new System.Drawing.Point(100, 190);
             this.textBoxRegisterInfo.Name = "textBoxRegisterInfo";
             this.textBoxRegisterInfo.ReadOnly = true;
-            this.textBoxRegisterInfo.Size = new System.Drawing.Size(200, 20);
+            this.textBoxRegisterInfo.Size = new System.Drawing.Size(423, 20);
             this.textBoxRegisterInfo.TabIndex = 4;
             // 
             // labelEmail
@@ -203,7 +240,7 @@ namespace Aplikacja_desktopowa.View
             this.labelPassword.AutoSize = true;
             this.labelPassword.Location = new System.Drawing.Point(30, 73);
             this.labelPassword.Name = "labelPassword";
-            this.labelPassword.Size = new System.Drawing.Size(36, 13);
+            this.labelPassword.Size = new System.Drawing.Size(39, 13);
             this.labelPassword.TabIndex = 6;
             this.labelPassword.Text = "Has³o:";
             // 
@@ -218,7 +255,7 @@ namespace Aplikacja_desktopowa.View
             // 
             // RegisterForm
             // 
-            this.ClientSize = new System.Drawing.Size(400, 250);
+            this.ClientSize = new System.Drawing.Size(629, 250);
             this.Controls.Add(this.labelName);
             this.Controls.Add(this.labelPassword);
             this.Controls.Add(this.labelEmail);
@@ -231,6 +268,7 @@ namespace Aplikacja_desktopowa.View
             this.Name = "RegisterForm";
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         
