@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import kotlinx.coroutines.launch
 import coil.compose.rememberAsyncImagePainter
 import com.example.multimedia.data.model.Photo
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 
@@ -52,6 +54,8 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
     val snackbarHostState = remember { SnackbarHostState() }
     val selectedPhotoIds = remember { mutableStateListOf<String>() }
     var selectionMode by remember { mutableStateOf(false) }
+    var showFilterSheet by remember { mutableStateOf(false) }
+
 
     LaunchedEffect(Unit) {
         for (message in snackbarMessages) {
@@ -135,6 +139,20 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
         }
     }
 
+    if (showFilterSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilterSheet = false },
+        ) {
+            FilterContent(
+                onApply = { selectedSort, selectedTags ->
+                    viewModel.applyFilters(selectedSort, selectedTags)
+                    showFilterSheet = false
+                }
+            )
+        }
+    }
+
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -180,6 +198,15 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
                     .padding(8.dp)
             ) {
                 Text("Dodaj zdjęcia")
+            }
+
+            Button(
+                onClick = { showFilterSheet = true },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp)
+            ) {
+                Text("Filtruj / Sortuj")
             }
 
             LazyColumn {
