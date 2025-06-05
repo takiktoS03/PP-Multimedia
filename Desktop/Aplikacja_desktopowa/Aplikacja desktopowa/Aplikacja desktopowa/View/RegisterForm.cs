@@ -144,14 +144,14 @@ namespace Aplikacja_desktopowa.View
 
         private async Task SendVerificationEmail(string email, string code)
         {
-            var message = new MailMessage("twojemail@gmail.com", email);
+            var message = new MailMessage("mediamenager1@gmail.com", email);
             message.Subject = "Kod weryfikacyjny";
             message.Body = $"Twój kod weryfikacyjny to: {code}";
 
             using (var smtp = new SmtpClient("smtp.gmail.com", 587))
             {
-                smtp.Credentials = new NetworkCredential("twojemail@gmail.com", "app_password"); 
                 smtp.EnableSsl = true;
+                smtp.Credentials = new NetworkCredential("mediamenager1@gmail.com", "nvjbgqjwypispumb"); 
                 await smtp.SendMailAsync(message);
             }
         }
