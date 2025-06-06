@@ -14,10 +14,10 @@ namespace Aplikacja_desktopowa
         /// Główny punkt wejścia dla aplikacji.
         /// </summary>
         [STAThread]
-        static async Task Main()
+        static void Main()
         {
             FirestoreCopier copier = new FirestoreCopier();
-            await copier.CopyAsync();
+            copier.CopyAsync().GetAwaiter().GetResult();
             FirebaseConfig.Init();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

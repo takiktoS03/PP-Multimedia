@@ -40,5 +40,29 @@ namespace Aplikacja_desktopowa.Service
             }
             return photoIds;
         }
+
+        public async Task AddPhotoToAlbumAsync(string albumId, string photoId)
+        {
+            var docRef = _firestore.Collection("album_photos").Document();
+            await docRef.SetAsync(new Dictionary<string, object>
+            {
+                { "album_id", albumId },
+                { "photo_id", photoId }
+            });
+        }
+
+        public async Task RemovePhotoFromAlbumAsync(string albumId, string photoId)
+        {
+            var query = _firestore.Collection("album_photos")
+                .WhereEqualTo("album_id", albumId)
+                .WhereEqualTo("photo_id", photoId);
+
+            var snapshot = await query.GetSnapshotAsync();
+            foreach (var doc in snapshot.Documents)
+            {
+                await doc.Reference.DeleteAsync();
+            }
+        }
+
     }
 }
