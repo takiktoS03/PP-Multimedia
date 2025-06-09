@@ -80,6 +80,7 @@ class LoginViewModel : ViewModel() {
 
             val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return onFailure("Brak UID")
 
+            // KLUCZOWA CZĘŚĆ: Utworzenie dokumentu w Firestore
             val userData = mapOf(
                 "email" to s.email,
                 "name" to s.name,
@@ -87,8 +88,7 @@ class LoginViewModel : ViewModel() {
                 "created_at" to FieldValue.serverTimestamp(),
                 "isVerified" to false
             )
-
-            FirebaseFirestore.getInstance("image-db")
+            FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(uid)
                 .set(userData)
@@ -96,16 +96,15 @@ class LoginViewModel : ViewModel() {
 
             Log.d("Register", "Utworzono użytkownika w Firestore: $uid")
 
+            // ✅ Wysłanie kodu weryfikacyjnego przez VerificationRepository
             val repo = VerificationRepository()
             var codeSent = false
             val latch = kotlinx.coroutines.CompletableDeferred<Unit>()
 
-            Log.d("Register", "Wywołanie sendVerificationCode()")
-
             Log.d("Register", "🔸 Repo utworzone, startujemy wysyłkę kodu")
 
             try {
-                repo.sendVerificationCode(uid, s.email) { success ->
+                repo.sendVerificationCode(s.email) { success ->
                     Log.d("Register", "✅ Callback z repo: success = $success")
                     codeSent = success
                     latch.complete(Unit)
@@ -119,10 +118,14 @@ class LoginViewModel : ViewModel() {
             Log.d("Register", "⏳ Oczekiwanie na latch")
             latch.await()
 
-
             if (codeSent) {
                 Log.d("Register", "Kod wysłany – success")
+                // ✅ Nie rób navController.navigate tutaj!
+                // ✅ Tylko wywołaj onSuccess() – w MainActivity robimy recreate()
                 onSuccess()
+                navController.navigate("verify/$uid") {
+                    popUpTo("login") { inclusive = true } // Usuwa login z back stacka
+                }
             } else {
                 Log.e("Register", "Nie udało się wysłać kodu")
                 onFailure("Nie udało się wysłać kodu weryfikacyjnego")

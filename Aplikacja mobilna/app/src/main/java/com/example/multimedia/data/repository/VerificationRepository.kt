@@ -1,6 +1,7 @@
 package com.example.multimedia.data.repository
 
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
@@ -14,13 +15,23 @@ class VerificationRepository {
     private val client = OkHttpClient()
     private val JSON = "application/json; charset=utf-8".toMediaType()
 
-    // ZMIEŃ na swój prawdziwy adres Firebase Functions
+    // WŁAŚCIWY adres do Twojej funkcji wysyłającej email
     private val functionUrl = "https://us-central1-image-management-cbaee.cloudfunctions.net/sendCode"
 
-    fun sendVerificationCode(userId: String, email: String, onComplete: (Boolean) -> Unit) {
+    fun sendVerificationCode(email: String, onComplete: (Boolean) -> Unit) {
         Log.d(TAG, "START: sendVerificationCode()")
 
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            Log.e(TAG, "❌ Brak zalogowanego użytkownika – nie mogę wysłać kodu")
+            onComplete(false)
+            return
+        }
+
         val firestore = FirebaseFirestore.getInstance()
+        Log.d(TAG, "Używam Firestore INSTANCE: ${firestore.app.name}")
+        Log.d(TAG, "Używany UID: $userId")
+
         val code = (100000..999999).random().toString()
         Log.d(TAG, "Wygenerowano kod: $code dla: $email")
 

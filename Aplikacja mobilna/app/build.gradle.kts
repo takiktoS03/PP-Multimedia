@@ -82,6 +82,8 @@ dependencies {
     implementation(libs.com.google.firebase.firebase.firestore.ktx)
     implementation(libs.okhttp)
 
+    implementation(libs.androidx.material3)
+
 
     // Multimedia / media3
     implementation(libs.androidx.media3.common.ktx)
