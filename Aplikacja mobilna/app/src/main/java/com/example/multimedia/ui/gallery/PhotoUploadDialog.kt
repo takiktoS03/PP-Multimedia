@@ -33,7 +33,7 @@ fun PhotoUploadDialog(
                 Text("Anuluj")
             }
         },
-        title = { Text("Dodaj zdjęcie") },
+        title = { Text("Wpisz dane zdjęcia") },
         text = {
             Column {
                 OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Tytuł") })
