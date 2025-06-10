@@ -83,8 +83,9 @@ dependencies {
     implementation(libs.okhttp)
 
     implementation(libs.androidx.material3)
+    implementation (libs.accompanist.permissions)
 
-
+    implementation (libs.play.services.location)
     // Multimedia / media3
     implementation(libs.androidx.media3.common.ktx)
 

@@ -50,6 +50,7 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
     val photos by viewModel.photos.observeAsState(emptyList())
 
     var showDialog by remember { mutableStateOf(false) }
+    var editingPhoto by remember { mutableStateOf<Photo?>(null) }
     val snackbarMessages = remember { Channel<String>(Channel.UNLIMITED) }
     val snackbarHostState = remember { SnackbarHostState() }
     val selectedPhotoIds = remember { mutableStateListOf<String>() }
@@ -73,70 +74,66 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
             selectedImageUris.clear()
             selectedImageUris.addAll(uris)
             showDialog = true
+            editingPhoto = null
         }
     }
 
-    selectedImageUris.let { uri ->
-        if (showDialog) {
-            PhotoUploadDialog(
-                onDismiss = {
-                    showDialog = false
-                    selectedImageUris.clear() },
-                onSubmit = { title, desc, loc, tags ->
-                    showDialog = false
+    if (showDialog) {
+        PhotoUploadDialog(
+            photo = editingPhoto,
+            onDismiss = {
+                showDialog = false
+                editingPhoto = null
+            },
+            onSubmit = { title, desc, loc, tags ->
+                showDialog = false
+                if (editingPhoto != null) {
+                    // Aktualizacja zdjęcia
+                    val updatedPhoto = editingPhoto!!.copy(
+                        title = title,
+                        description = desc,
+                        location = loc,
+                        tags = tags
+                    )
+                    viewModel.updatePhoto(updatedPhoto)
+                    snackbarMessages.trySend("Zaktualizowano zdjęcie.")
+                    editingPhoto = null
+                    selectedPhotoIds.clear()
+                    selectionMode = false
+                } else if (selectedImageUris.isNotEmpty()) {
+                    // Dodawanie nowego zdjęcia
                     val failedUris = mutableListOf<Uri>()
-
                     coroutineScope.launch {
-                        if (selectionMode && selectedPhotoIds.isNotEmpty()) {
-                            val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
-                            selectedPhotos.forEach { photo ->
-                                val updatedPhoto = photo.copy(
-                                    title = title,
-                                    description = desc,
-                                    location = loc,
-                                    tags = tags
-                                )
-                                viewModel.updatePhoto(updatedPhoto)
-                            }
-                            snackbarMessages.trySend("Zaktualizowano ${selectedPhotoIds.size} zdjęć.")
-                            selectedPhotoIds.clear()
-                            selectionMode = false
-                        } else if (selectedImageUris.isNotEmpty()) {
-                            selectedImageUris.forEach { uri ->
-                                val success = CompletableDeferred<Boolean>()
-                                val locationFromExif = getExifLocation(context, uri) ?: ""
-                                val location = loc.ifBlank { locationFromExif }
-
-                                viewModel.uploadPhoto(
-                                    uri = uri,
-                                    title = title,
-                                    description = desc,
-                                    location = location,
-                                    tags = tags,
-                                    onSuccess = { success.complete(true) },
-                                    onFailure = {
-                                        failedUris.add(uri)
-                                        success.complete(false)
-                                    }
-                                )
-                                success.await()
-                            }
-                            if (failedUris.isEmpty()) {
-                                snackbarMessages.trySend("Wszystkie zdjęcia przesłane!")
-                            } else {
-                                failedUris.forEach {
-                                    snackbarMessages.trySend("Błąd przesyłania: ${it.lastPathSegment}")
+                        selectedImageUris.forEach { uri ->
+                            val success = CompletableDeferred<Boolean>()
+                            val locationFromExif = getExifLocation(context, uri) ?: ""
+                            val locationToUse = loc.ifBlank { locationFromExif }
+                            viewModel.uploadPhoto(
+                                uri = uri,
+                                title = title,
+                                description = desc,
+                                location = locationToUse,
+                                tags = tags,
+                                onSuccess = { success.complete(true) },
+                                onFailure = {
+                                    failedUris.add(uri)
+                                    success.complete(false)
                                 }
-                            }
-                            selectedImageUris.clear()
+                            )
+                            success.await()
                         }
+                        if (failedUris.isEmpty()) {
+                            snackbarMessages.trySend("Wszystkie zdjęcia przesłane!")
+                        } else {
+                            failedUris.forEach {
+                                snackbarMessages.trySend("Błąd przesyłania: ${it.lastPathSegment}")
+                            }
+                        }
+                        selectedImageUris.clear()
                     }
                 }
-
-
-            )
-
-        }
+            }
+        )
     }
 
     if (showFilterSheet) {
@@ -162,16 +159,19 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
                     actions = {
                         IconButton(onClick = {
                             val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
+                            editingPhoto = selectedPhotos.firstOrNull()
+                            showDialog = true
+                        }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edytuj")
+                        }
+
+                        IconButton(onClick = {
+                            val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
                             selectedPhotos.forEach { viewModel.deletePhoto(it) }
                             selectedPhotoIds.clear()
                             selectionMode = false
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = "Usuń")
-                        }
-                        IconButton(onClick = {
-                            showDialog = true
-                        }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edytuj")
                         }
                     }
                 )
