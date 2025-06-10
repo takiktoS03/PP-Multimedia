@@ -85,7 +85,11 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation (libs.accompanist.permissions)
 
+    // Localization
     implementation (libs.play.services.location)
+    implementation (libs.maps.compose)
+    implementation (libs.play.services.maps)
+
     // Multimedia / media3
     implementation(libs.androidx.media3.common.ktx)
 

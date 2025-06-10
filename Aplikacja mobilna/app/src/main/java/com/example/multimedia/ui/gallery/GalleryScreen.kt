@@ -40,13 +40,16 @@ import kotlinx.coroutines.launch
 import coil.compose.rememberAsyncImagePainter
 import com.example.multimedia.data.model.Photo
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
+fun GalleryScreen( viewModel: GalleryViewModel = hiltViewModel(),
+                   navController: NavController
+) {
     val photos by viewModel.photos.observeAsState(emptyList())
 
     var showDialog by remember { mutableStateOf(false) }
@@ -56,7 +59,6 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
     val selectedPhotoIds = remember { mutableStateListOf<String>() }
     var selectionMode by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
-
 
     LaunchedEffect(Unit) {
         for (message in snackbarMessages) {
@@ -81,7 +83,8 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
     if (showDialog) {
         PhotoUploadDialog(
             photo = editingPhoto,
-            onDismiss = {
+            navController = navController,
+                    onDismiss = {
                 showDialog = false
                 editingPhoto = null
             },
@@ -159,7 +162,7 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
                     actions = {
                         IconButton(onClick = {
                             val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
-                            editingPhoto = selectedPhotos.firstOrNull()
+                            editingPhoto = selectedPhotos.firstOrNull() // <<<<<<<< DODAJ TO!
                             showDialog = true
                         }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edytuj")

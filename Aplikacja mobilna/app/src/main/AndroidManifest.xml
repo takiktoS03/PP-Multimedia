@@ -18,6 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Multimedia"
         tools:targetApi="31">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCLnn61ojEk9wajOMLIXoBpmJZpiB0AjaI" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

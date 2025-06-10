@@ -15,10 +15,12 @@ import com.google.android.gms.location.LocationServices
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import com.example.multimedia.data.model.Photo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
+import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -26,7 +28,8 @@ import java.util.Locale
 fun PhotoUploadDialog(
     photo: Photo? = null,
     onDismiss: () -> Unit,
-    onSubmit: (title: String, description: String, location: String, tags: List<String>) -> Unit
+    onSubmit: (title: String, description: String, location: String, tags: List<String>) -> Unit,
+    navController: NavController
 ) {
     var title by remember { mutableStateOf(photo?.title ?: "") }
     var description by remember { mutableStateOf(photo?.description ?: "") }
@@ -35,6 +38,25 @@ fun PhotoUploadDialog(
 
     val context = LocalContext.current
     val locationPermissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
+
+    // Nasłuchuj lokalizacji wybranej z mapy
+    val savedStateHandle = remember { navController.currentBackStackEntry?.savedStateHandle }
+    LaunchedEffect(savedStateHandle?.get<LatLng>("picked_location")) {
+        savedStateHandle?.get<LatLng>("picked_location")?.let { latLng ->
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0]
+                val country = address.countryName ?: "Nieznany kraj"
+                val locality = address.locality ?: "Nieznane miasto"
+                location = "$locality, $country"
+            } else {
+                location = "${latLng.latitude}, ${latLng.longitude}"
+            }
+            savedStateHandle.remove<LatLng>("picked_location")
+        }
+    }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -72,6 +94,10 @@ fun PhotoUploadDialog(
                     label = { Text("Tagi (oddziel przecinkiem)") })
 
                 Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = { navController.navigate("location_picker") }) {
+                    Text("Wybierz lokalizację na mapie")
+                }
+
                 Button(onClick = {
                     if (locationPermissionState.status.isGranted) {
                         val permissionCheck = ContextCompat.checkSelfPermission(

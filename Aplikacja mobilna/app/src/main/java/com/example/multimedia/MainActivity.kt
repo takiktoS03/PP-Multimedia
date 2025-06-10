@@ -1,5 +1,6 @@
 package com.example.multimedia
 
+import LocationPickerScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -163,7 +164,7 @@ class MainActivity : ComponentActivity() {
 
                             composable("gallery") {
                                 HomeWithDrawer(navController, drawerState, scope, currentRoute) {
-                                    GalleryScreen()
+                                    GalleryScreen(navController = navController)
                                 }
                             }
 
@@ -179,6 +180,20 @@ class MainActivity : ComponentActivity() {
                                     })
                                 }
                             }
+
+                            composable("location_picker") {
+                                LocationPickerScreen(
+                                    onLocationPicked = { latLng ->
+                                        // Wróć do dialogu z tą lokalizacją
+                                        navController.previousBackStackEntry
+                                            ?.savedStateHandle
+                                            ?.set("picked_location", latLng)
+                                        navController.popBackStack()
+                                    },
+                                    onCancel = { navController.popBackStack() }
+                                )
+                            }
+
                         }
                     }
                 }
