@@ -211,6 +211,14 @@ fun GalleryScreen( viewModel: GalleryViewModel = hiltViewModel(),
             ) {
                 Text("Filtruj / Sortuj")
             }
+            Button(
+                onClick = { navController.navigate("map_with_photos") },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp)
+            ) {
+                Text("Zobacz zdjęcia na mapie")
+            }
 
             LazyColumn {
                 items(photos, key = { it.id }) { photo ->

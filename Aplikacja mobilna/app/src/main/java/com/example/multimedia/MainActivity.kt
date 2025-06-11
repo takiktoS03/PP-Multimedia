@@ -22,6 +22,7 @@ import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.multimedia.ui.gallery.GalleryScreen
 import com.example.multimedia.ui.gallery.LocationPickerScreen
+import com.example.multimedia.ui.gallery.MapWithPhotosScreen
 import com.example.multimedia.ui.home.HomeViewModel
 import com.example.multimedia.ui.login.LoginViewModel
 import com.example.multimedia.ui.pages.AccountScreen
@@ -196,6 +197,11 @@ class MainActivity : ComponentActivity() {
                             composable("reset_password") {
                                 ResetPasswordScreen(navController)
                             }
+                            composable("map_with_photos") {
+                                MapWithPhotosScreen(
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
 
                         }
                     }
@@ -244,6 +250,20 @@ fun HomeWithDrawer(
                     },
                     onClick = {
                         navController.navigate("gallery") {
+                            launchSingleTop = true
+                            popUpTo("home") { inclusive = false }
+                        }
+                        scope.launch { drawerState.close() }
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Maps of Photos") },
+                    selected = currentRoute == "map_with_photos",
+                    icon = {
+                        Icon(painter = painterResource(id = R.drawable.ic_menu_gallery), contentDescription = null)
+                    },
+                    onClick = {
+                        navController.navigate("map_with_photos") {
                             launchSingleTop = true
                             popUpTo("home") { inclusive = false }
                         }
