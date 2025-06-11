@@ -14,20 +14,95 @@ namespace Aplikacja_desktopowa.View
         private readonly PhotoService _photoService = new PhotoService();
         private readonly string _albumId;
 
+        private ComboBox comboBoxSortBy;
+        private TextBox textBoxTagFilter;
+        private Button buttonSort;
+        private List<PhotoMetadata> currentPhotos;
+
+        private Button buttonDeleteAlbum;
+
         public AlbumPhotosForm(string albumId)
         {
             _albumId = albumId;
             Text = "Zdjêcia w albumie";
             Load += AlbumPhotosForm_Load;
             AutoScroll = true;
+
+            buttonDeleteAlbum = new Button
+            {
+                Text = "Usuñ ten album",
+                Left = 10,
+                Top = 10,
+                Width = 150
+            };
+            buttonDeleteAlbum.Click += ButtonDeleteAlbum_Click;
+            Controls.Add(buttonDeleteAlbum);
+
+            comboBoxSortBy = new ComboBox
+            {
+                Left = 170,
+                Top = 10,
+                Width = 120,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            comboBoxSortBy.Items.AddRange(new string[] { "Nazwa", "Data dodania", "Tag" });
+            comboBoxSortBy.SelectedIndex = 0;
+            Controls.Add(comboBoxSortBy);
+
+            textBoxTagFilter = new TextBox
+            {
+                Left = 300,
+                Top = 10,
+                Width = 100,
+                Visible = false
+            };
+            Controls.Add(textBoxTagFilter);
+
+            buttonSort = new Button
+            {
+                Text = "Sortuj",
+                Left = 410,
+                Top = 10,
+                Width = 80
+            };
+            buttonSort.Click += ButtonSort_Click;
+            Controls.Add(buttonSort);
+
+            comboBoxSortBy.SelectedIndexChanged += (s, e) =>
+            {
+                textBoxTagFilter.Visible = comboBoxSortBy.SelectedItem.ToString() == "Tag";
+            };
         }
 
         private async void AlbumPhotosForm_Load(object sender, EventArgs e)
         {
             var photoIds = await _albumService.GetPhotoIdsForAlbumAsync(_albumId);
-            var photos = await _photoService.GetPhotosByIdsAsync(photoIds);
+            currentPhotos = await _photoService.GetPhotosByIdsAsync(photoIds);
+            DisplayPhotos(currentPhotos);
+        }
 
-            int y = 10;
+        private async void ButtonDeleteAlbum_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Czy na pewno chcesz usun¹æ ten album wraz z powi¹zaniami?", "PotwierdŸ usuniêcie", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (result == DialogResult.Yes)
+            {
+                await _albumService.DeleteAlbumAsync(_albumId);
+                MessageBox.Show("Album zosta³ usuniêty.");
+                this.Close();
+            }
+        }
+
+        private void DisplayPhotos(List<PhotoMetadata> photos)
+        {
+            // Usuñ stare PictureBoxy, zostaw kontrolki sortowania i przycisk usuwania
+            for (int i = Controls.Count - 1; i >= 0; i--)
+            {
+                var ctrl = Controls[i];
+                if (ctrl is PictureBox)
+                    Controls.RemoveAt(i);
+            }
+
+            int y = 50;
             foreach (var photo in photos)
             {
                 var pictureBox = new PictureBox
@@ -68,6 +143,33 @@ namespace Aplikacja_desktopowa.View
                     }
                 }
             }
+        }
+
+        private void ButtonSort_Click(object sender, EventArgs e)
+        {
+            if (currentPhotos == null) return;
+
+            var sortBy = comboBoxSortBy.SelectedItem.ToString();
+            List<PhotoMetadata> sorted;
+
+            if (sortBy == "Nazwa")
+            {
+                sorted = new List<PhotoMetadata>(currentPhotos);
+                sorted.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.CurrentCultureIgnoreCase));
+            }
+            else if (sortBy == "Data dodania")
+            {
+                sorted = new List<PhotoMetadata>(currentPhotos);
+                sorted.Sort((a, b) => a.UploadedAt.CompareTo(b.UploadedAt));
+            }
+            else // Tag
+            {
+                string tag = textBoxTagFilter.Text.Trim();
+                sorted = new List<PhotoMetadata>(currentPhotos);
+                sorted = sorted.FindAll(p => p.Tags != null && p.Tags.Contains(tag));
+            }
+
+            DisplayPhotos(sorted);
         }
     }
 }

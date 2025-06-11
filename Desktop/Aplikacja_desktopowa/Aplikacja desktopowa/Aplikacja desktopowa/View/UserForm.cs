@@ -1,3 +1,4 @@
+using Aplikacja_desktopowa.Service;
 using System;
 using System.Windows.Forms;
 
@@ -5,11 +6,20 @@ namespace Aplikacja_desktopowa.View
 {
     public class UserForm : Form
     {
+        private Button buttonAddAlbum;
         private Button buttonAlbums;
         private Button buttonLogout;
 
         public UserForm()
         {
+            buttonAddAlbum = new Button
+            {
+                Text = "Dodaj album",
+                Location = new System.Drawing.Point(50, 10),
+                Size = new System.Drawing.Size(150, 30)
+            };
+            buttonAddAlbum.Click += ButtonAddAlbum_Click;
+
             buttonAlbums = new Button
             {
                 Text = "PrzejdŸ do albumów",
@@ -26,6 +36,7 @@ namespace Aplikacja_desktopowa.View
             };
             buttonLogout.Click += ButtonLogout_Click;
 
+            Controls.Add(buttonAddAlbum);
             Controls.Add(buttonAlbums);
             Controls.Add(buttonLogout);
 
@@ -33,6 +44,19 @@ namespace Aplikacja_desktopowa.View
             ClientSize = new System.Drawing.Size(250, 180);
 
             this.FormClosed += UserForm_FormClosed;
+        }
+
+        private async void ButtonAddAlbum_Click(object sender, EventArgs e)
+        {
+            using (var addAlbumForm = new AddAlbumForm())
+            {
+                if (addAlbumForm.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(addAlbumForm.AlbumName))
+                {
+                    var albumService = new AlbumService();
+                    await albumService.AddAlbumAsync(addAlbumForm.AlbumName, addAlbumForm.AlbumDescription);
+                    MessageBox.Show("Album zosta³ dodany.");
+                }
+            }
         }
 
         private void ButtonAlbums_Click(object sender, EventArgs e)

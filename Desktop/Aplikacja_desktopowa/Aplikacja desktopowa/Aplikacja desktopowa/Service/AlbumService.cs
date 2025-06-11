@@ -1,5 +1,6 @@
 using Aplikacja_desktopowa.Model;
 using Google.Cloud.Firestore;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -62,6 +63,29 @@ namespace Aplikacja_desktopowa.Service
             {
                 await doc.Reference.DeleteAsync();
             }
+        }
+
+        public async Task<string> AddAlbumAsync(string name, string description)
+        {
+            var docRef = _firestore.Collection("albums").Document();
+            var album = new Album
+            {
+                Name = name,
+                Description = description,
+                CreatedAt = DateTime.UtcNow
+            };
+            await docRef.SetAsync(album);
+            return docRef.Id;
+        }
+
+        public async Task DeleteAlbumAsync(string albumId)
+        {
+            await _firestore.Collection("albums").Document(albumId).DeleteAsync();
+            // Usuñ powi¹zania album_photos
+            var query = _firestore.Collection("album_photos").WhereEqualTo("album_id", albumId);
+            var snapshot = await query.GetSnapshotAsync();
+            foreach (var doc in snapshot.Documents)
+                await doc.Reference.DeleteAsync();
         }
 
     }
