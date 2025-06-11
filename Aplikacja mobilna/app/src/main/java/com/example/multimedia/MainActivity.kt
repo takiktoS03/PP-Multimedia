@@ -27,6 +27,7 @@ import com.example.multimedia.ui.login.LoginViewModel
 import com.example.multimedia.ui.pages.AccountScreen
 import com.example.multimedia.ui.pages.HomeScreen
 import com.example.multimedia.ui.pages.LoginScreen
+import com.example.multimedia.ui.pages.ResetPasswordScreen
 import com.example.multimedia.ui.pages.VerificationScreen
 import com.example.multimedia.ui.theme.MultimediaTheme
 import com.example.multimedia.ui.veryfication.VerificationViewModel
@@ -191,6 +192,9 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onCancel = { navController.popBackStack() }
                                 )
+                            }
+                            composable("reset_password") {
+                                ResetPasswordScreen(navController)
                             }
 
                         }

@@ -197,6 +197,12 @@ fun LoginScreen(
             )
         }
 
+        TextButton(onClick = {
+            navController.navigate("reset_password")
+        }) {
+            Text("Nie pamiętasz hasła?", color = Color(0xFF6200EE))
+        }
+
         state.error?.let {
             Spacer(modifier = Modifier.height(12.dp))
             Text(it, color = MaterialTheme.colorScheme.error)
