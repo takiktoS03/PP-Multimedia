@@ -89,6 +89,7 @@ dependencies {
     implementation (libs.play.services.location)
     implementation (libs.maps.compose)
     implementation (libs.play.services.maps)
+    // implementation (libs.places)
 
     // Multimedia / media3
     implementation(libs.androidx.media3.common.ktx)

@@ -1,6 +1,5 @@
 package com.example.multimedia
 
-import LocationPickerScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +21,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.multimedia.ui.gallery.GalleryScreen
+import com.example.multimedia.ui.gallery.LocationPickerScreen
 import com.example.multimedia.ui.home.HomeViewModel
 import com.example.multimedia.ui.login.LoginViewModel
 import com.example.multimedia.ui.pages.AccountScreen
@@ -163,10 +163,9 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("gallery") {
-                                HomeWithDrawer(navController, drawerState, scope, currentRoute) {
-                                    GalleryScreen(navController = navController)
-                                }
+                                GalleryScreen(navController = navController)
                             }
+
 
                             composable("account") {
                                 HomeWithDrawer(navController, drawerState, scope, currentRoute) {
