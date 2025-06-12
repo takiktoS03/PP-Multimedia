@@ -2,26 +2,22 @@ package com.example.multimedia.ui.gallery
 
 import android.content.pm.PackageManager
 import android.location.Geocoder
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
 import android.location.Location
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.google.android.gms.location.LocationServices
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.multimedia.data.model.Photo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -57,7 +53,6 @@ fun PhotoUploadDialog(
         }
     }
 
-
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -79,19 +74,23 @@ fun PhotoUploadDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Tytuł") })
+                    label = { Text("Tytuł") }
+                )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Opis") })
+                    label = { Text("Opis") }
+                )
                 OutlinedTextField(
                     value = location,
                     onValueChange = { location = it },
-                    label = { Text("Lokalizacja") })
+                    label = { Text("Lokalizacja") }
+                )
                 OutlinedTextField(
                     value = tagsInput,
                     onValueChange = { tagsInput = it },
-                    label = { Text("Tagi (oddziel przecinkiem)") })
+                    label = { Text("Tagi (oddziel przecinkiem)") }
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(onClick = { navController.navigate("location_picker") }) {
@@ -105,27 +104,26 @@ fun PhotoUploadDialog(
                         )
                         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
                             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-                            fusedLocationClient.lastLocation
-                                .addOnSuccessListener { loc: Location? ->
-                                    if (loc != null) {
-                                        // Reverse geocoding
-                                        val geocoder = Geocoder(context, Locale.getDefault())
-                                        val addresses = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
-                                        if (!addresses.isNullOrEmpty()) {
-                                            val address = addresses[0]
-                                            val country = address.countryName ?: "Nieznany kraj"
-                                            val locality = address.locality ?: "Nieznane miasto"
-                                            location = "$locality, $country"
-                                        } else {
-                                            location = "Brak danych lokalizacji"
-                                        }
+                            fusedLocationClient.getCurrentLocation(
+                                com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY, null
+                            ).addOnSuccessListener { loc: Location? ->
+                                if (loc != null) {
+                                    val geocoder = Geocoder(context, Locale.getDefault())
+                                    val addresses = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
+                                    if (!addresses.isNullOrEmpty()) {
+                                        val address = addresses[0]
+                                        val country = address.countryName ?: "Nieznany kraj"
+                                        val locality = address.locality ?: "Nieznane miasto"
+                                        location = "$locality, $country"
                                     } else {
-                                        location = "Brak lokalizacji"
+                                        location = "Brak danych lokalizacji"
                                     }
+                                } else {
+                                    location = "Brak włączonej lokalizacji"
                                 }
-                                .addOnFailureListener {
-                                    location = "Błąd pobierania lokalizacji"
-                                }
+                            }.addOnFailureListener {
+                                location = "Błąd pobierania lokalizacji"
+                            }
                         } else {
                             location = "Brak uprawnień"
                         }
