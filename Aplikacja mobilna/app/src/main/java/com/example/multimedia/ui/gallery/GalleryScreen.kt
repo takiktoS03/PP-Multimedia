@@ -136,11 +136,39 @@ fun GalleryScreen(
         }
     }
 
-    DrawerScaffold(
-        navController = navController,
-        currentRoute = "gallery",
-        title = "Galeria",
-        snackbarHostState = snackbarHostState
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    if (selectionMode) {
+                        Text("${selectedPhotoIds.size} zaznaczone")
+                    } else {
+                        Text("Galeria")
+                    }
+                },
+                actions = {
+                    if (selectionMode) {
+                        IconButton(onClick = {
+                            val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
+                            selectedPhotos.forEach { viewModel.deletePhoto(it) }
+                            selectedPhotoIds.clear()
+                            selectionMode = false
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Usuń")
+                        }
+
+                        IconButton(onClick = {
+                            val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
+                            editingPhoto = selectedPhotos.firstOrNull()
+                            showDialog = true
+                        }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edytuj")
+                        }
+                    }
+                }
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -148,16 +176,26 @@ fun GalleryScreen(
                 .padding(padding)
                 .padding(8.dp)
         ) {
+            Text(
+                text = "Galeria",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+
             Button(
                 onClick = { pickImagesLauncher.launch("image/*") },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp)
             ) {
                 Text("Dodaj zdjęcia")
             }
 
             Button(
                 onClick = { showFilterSheet = true },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp)
             ) {
                 Text("Filtruj / Sortuj")
             }
