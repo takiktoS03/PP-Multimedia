@@ -12,9 +12,11 @@ namespace Aplikacja_desktopowa.View
     {
         private readonly AlbumService _albumService = new AlbumService();
         private readonly PhotoService _photoService = new PhotoService();
+        private readonly string _userId;
 
-        public AlbumsForm()
+        public AlbumsForm(string userId)
         {
+            _userId = userId;
             Text = "Albumy";
             Load += AlbumsForm_Load;
             AutoScroll = true;
@@ -22,11 +24,11 @@ namespace Aplikacja_desktopowa.View
 
         private async void AlbumsForm_Load(object sender, EventArgs e)
         {
-            var albums = await _albumService.GetAllAlbumsAsync();
+            var albums = await _albumService.GetAlbumsByUserIdAsync(_userId);
             int y = 10;
+
             foreach (var (id, album) in albums)
             {
-                // Przycisk otwieraj¹cy album
                 var btnOpen = new Button
                 {
                     Text = album.Name,
@@ -37,7 +39,6 @@ namespace Aplikacja_desktopowa.View
                 btnOpen.Click += AlbumButton_Click;
                 Controls.Add(btnOpen);
 
-                // Przycisk dodaj¹cy zdjêcia
                 var btnAddPhotos = new Button
                 {
                     Text = "Dodaj zdjêcia",

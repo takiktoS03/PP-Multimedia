@@ -1,11 +1,13 @@
 ﻿using Aplikacja_desktopowa.Model;
-using Google.Cloud.Firestore;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Google.Cloud.Storage.V1;
 using Google.Apis.Storage.v1.Data;
+using Google.Cloud.Firestore;
+using Google.Cloud.Firestore.V1;
+using Google.Cloud.Storage.V1;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Aplikacja_desktopowa.Service
 {
@@ -67,7 +69,26 @@ namespace Aplikacja_desktopowa.Service
             return result;
         }
 
+        public async Task<List<PhotoMetadata>> GetPhotosByUserIdAsync(string userId)
+        {
+            var collectionRef = _firestore.Collection("photos");
+            var query = collectionRef.WhereEqualTo("user_id", userId);
+            var snapshot = await query.GetSnapshotAsync();
 
+            var photos = new List<PhotoMetadata>();
+
+            foreach (var document in snapshot.Documents)
+            {
+                if (document.Exists)
+                {
+                    var photo = document.ConvertTo<PhotoMetadata>();
+                    photo.Id = document.Id;
+                    photos.Add(photo);
+                }
+            }
+
+            return photos;
+        }
 
         public async Task<string> AddPhotoAndGetIdAsync(PhotoMetadata photo, string localFilePath)
         {
@@ -110,6 +131,20 @@ namespace Aplikacja_desktopowa.Service
                 url += $"&token={token}";
 
             return url;
+        }
+
+        public async Task DownloadPhotoByUrlAsync(string downloadUrl, string localFilePath)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var response = await client.GetAsync(downloadUrl);
+                response.EnsureSuccessStatusCode();
+
+                using (var fs = new FileStream(localFilePath, FileMode.Create, FileAccess.Write))
+                {
+                    await response.Content.CopyToAsync(fs);
+                }
+            }
         }
 
         public async Task UpdatePhotoAsync(PhotoMetadata photo)

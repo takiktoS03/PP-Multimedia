@@ -134,7 +134,7 @@ namespace Aplikacja_desktopowa.View
                         await _albumService.RemovePhotoFromAlbumAsync(_albumId, photo.Id);
                         MessageBox.Show("Zdjêcie usuniête z albumu.");
                         Controls.Clear();
-                        AlbumPhotosForm_Load(this, EventArgs.Empty); // odœwie¿ widok
+                        AlbumPhotosForm_Load(this, EventArgs.Empty);
                     }
                     else
                     {

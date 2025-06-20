@@ -14,5 +14,8 @@ namespace Aplikacja_desktopowa.Model
 
         [FirestoreProperty(Name = "created_at")]
         public DateTime CreatedAt { get; set; }
+
+        [FirestoreProperty(Name = "user_id")]
+        public string UserId { get; set; }
     }
 }

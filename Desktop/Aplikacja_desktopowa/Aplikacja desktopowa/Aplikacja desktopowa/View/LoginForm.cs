@@ -60,7 +60,7 @@ namespace Aplikacja_desktopowa.View
 
             textBoxLogInfo.Text = $"Zalogowano jako: {user.Name}";
 
-            UserForm userForm = new UserForm();
+            UserForm userForm = new UserForm(user.Id);
             userForm.Show();
             this.Hide();
         }

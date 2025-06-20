@@ -24,5 +24,8 @@ namespace Aplikacja_desktopowa.Model
 
         [FirestoreProperty(Name = "updated_at")]
         public Timestamp? UpdatedAt { get; set; }
+
+        [FirestoreProperty(Name = "user_id")]
+        public string Id { get; set; }
     }
 }
