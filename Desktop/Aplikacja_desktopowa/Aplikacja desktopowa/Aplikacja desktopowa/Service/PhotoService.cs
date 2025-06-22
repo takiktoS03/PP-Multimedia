@@ -5,6 +5,8 @@ using Google.Cloud.Firestore.V1;
 using Google.Cloud.Storage.V1;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -156,6 +158,14 @@ namespace Aplikacja_desktopowa.Service
             await docRef.SetAsync(photo);
         }
 
+        public static void CreateThumbnail(string originalPath, string thumbnailPath, int width, int height)
+        {
+            using (var image = Image.FromFile(originalPath))
+            using (var thumb = image.GetThumbnailImage(width, height, () => false, IntPtr.Zero))
+            {
+                thumb.Save(thumbnailPath, ImageFormat.Jpeg);
+            }
+        }
 
     }
 }

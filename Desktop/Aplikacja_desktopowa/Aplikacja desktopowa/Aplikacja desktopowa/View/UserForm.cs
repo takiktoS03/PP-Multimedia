@@ -20,7 +20,7 @@ namespace Aplikacja_desktopowa.View
             buttonPhotos = new Button
             {
                 Text = "Moje zdjêcia",
-                Location = new System.Drawing.Point(50, 10),
+                Location = new System.Drawing.Point(50, 50),
                 Size = new System.Drawing.Size(150, 30)
             };
             buttonPhotos.Click += ButtonPhotos_Click;
@@ -28,7 +28,7 @@ namespace Aplikacja_desktopowa.View
             buttonAddAlbum = new Button
             {
                 Text = "Dodaj album",
-                Location = new System.Drawing.Point(50, 50),
+                Location = new System.Drawing.Point(50, 100),
                 Size = new System.Drawing.Size(150, 30)
             };
             buttonAddAlbum.Click += ButtonAddAlbum_Click;
@@ -36,7 +36,7 @@ namespace Aplikacja_desktopowa.View
             buttonAlbums = new Button
             {
                 Text = "PrzejdŸ do albumów",
-                Location = new System.Drawing.Point(50, 100),
+                Location = new System.Drawing.Point(50, 150),
                 Size = new System.Drawing.Size(150, 30)
             };
             buttonAlbums.Click += ButtonAlbums_Click;
@@ -44,7 +44,7 @@ namespace Aplikacja_desktopowa.View
             buttonLogout = new Button
             {
                 Text = "Wyloguj",
-                Location = new System.Drawing.Point(50, 150),
+                Location = new System.Drawing.Point(50, 200),
                 Size = new System.Drawing.Size(150, 30)
             };
             buttonLogout.Click += ButtonLogout_Click;
@@ -55,7 +55,7 @@ namespace Aplikacja_desktopowa.View
             Controls.Add(buttonLogout);
 
             Text = "Strona u¿ytkownika";
-            ClientSize = new System.Drawing.Size(250, 180);
+            ClientSize = new System.Drawing.Size(250, 300);
 
             this.FormClosed += UserForm_FormClosed;
         }

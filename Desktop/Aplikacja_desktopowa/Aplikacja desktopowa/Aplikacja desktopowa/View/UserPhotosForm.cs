@@ -2,6 +2,10 @@
 using Aplikacja_desktopowa.Service;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View
@@ -16,13 +20,14 @@ namespace Aplikacja_desktopowa.View
         private ComboBox comboBoxSortBy;
         private TextBox textBoxTagFilter;
         private Button buttonSort;
+        private Button buttonAddPhoto;
 
         public UserPhotosForm(string userId)
         {
             _userId = userId;
             Text = "Zdjęcia użytkownika";
-            Width = 600;
-            Height = 600;
+            Width = 900;
+            Height = 700;
             AutoScroll = true;
 
             comboBoxSortBy = new ComboBox
@@ -55,12 +60,27 @@ namespace Aplikacja_desktopowa.View
             buttonSort.Click += ButtonSort_Click;
             Controls.Add(buttonSort);
 
+            buttonAddPhoto = new Button
+            {
+                Text = "Add Photo",
+                Left = 340,
+                Top = 10,
+                Width = 100
+            };
+            buttonAddPhoto.Click += ButtonAddPhoto_Click;
+            Controls.Add(buttonAddPhoto);
+
             comboBoxSortBy.SelectedIndexChanged += (s, e) =>
             {
                 textBoxTagFilter.Visible = comboBoxSortBy.SelectedItem.ToString() == "Tag";
             };
 
             Load += UserPhotosForm_Load;
+            
+            this.Resize += (s, e) =>
+            {
+                if (currentPhotos != null) DisplayPhotos(currentPhotos);
+            };
         }
 
         private async void UserPhotosForm_Load(object sender, EventArgs e)
@@ -97,7 +117,32 @@ namespace Aplikacja_desktopowa.View
             DisplayPhotos(sorted);
         }
 
-        private void DisplayPhotos(List<PhotoMetadata> photos)
+        private async void ButtonAddPhoto_Click(object sender, EventArgs e)
+        {
+            using (var addPhotosForm = new AddPhotosForm())
+            {
+                if (addPhotosForm.ShowDialog() == DialogResult.OK)
+                {
+                    foreach (var (photo, filePath) in addPhotosForm.PhotoMetadatas.Zip(addPhotosForm.LocalFilePaths, (p, f) => (p, f)))
+                    {
+                        string fileNameInStorage = Guid.NewGuid().ToString() + Path.GetExtension(filePath);
+                        string fileUrl = await _photoService.UploadPhotoToStorageAsync(filePath, fileNameInStorage);
+
+                        photo.FilePath = fileUrl;
+                        photo.Id = null;
+                        photo.UserId = _userId;
+
+                        await _photoService.AddPhotoAndGetIdAsync(photo, filePath);
+                    }
+                    MessageBox.Show("Photos have been added.");
+                    userPhotos = await _photoService.GetPhotosByUserIdAsync(_userId);
+                    currentPhotos = new List<PhotoMetadata>(userPhotos);
+                    DisplayPhotos(currentPhotos);
+                }
+            }
+        }
+
+        private async void DisplayPhotos(List<PhotoMetadata> photos)
         {
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
@@ -105,27 +150,58 @@ namespace Aplikacja_desktopowa.View
                     Controls.RemoveAt(i);
             }
 
-            int y = 50;
+            int margin = 10;
+            int thumbWidth = 150;
+            int thumbHeight = 150;
+            int startY = 50;
+            int x = margin;
+            int y = startY;
+            int maxWidth = this.ClientSize.Width;
+
             foreach (var photo in photos)
             {
+                string thumbFileName = photo.Id + "_thumb.jpg";
+                string thumbPath = Path.Combine(Path.GetTempPath(), thumbFileName);
+
+                if (!File.Exists(thumbPath))
+                {
+                    string sanitizedFileName = Regex.Replace(photo.Id + Path.GetExtension(photo.FilePath), @"[<>:""/\\|?*]", "_");
+                    string tempOriginalPath = Path.Combine(Path.GetTempPath(), sanitizedFileName);
+                    await _photoService.DownloadPhotoByUrlAsync(photo.FilePath, tempOriginalPath);
+
+                    PhotoService.CreateThumbnail(tempOriginalPath, thumbPath, thumbWidth, thumbHeight);
+
+                    try { File.Delete(tempOriginalPath); } catch { }
+                }
+
+                if (x + thumbWidth + margin > maxWidth)
+                {
+                    x = margin;
+                    y += thumbHeight + margin;
+                }
+
                 var pictureBox = new PictureBox
                 {
-                    Location = new System.Drawing.Point(10, y),
-                    Size = new System.Drawing.Size(150, 150),
+                    Location = new Point(x, y),
+                    Size = new Size(thumbWidth, thumbHeight),
                     SizeMode = PictureBoxSizeMode.Zoom,
                     Tag = photo
                 };
 
-                try { pictureBox.Load(photo.FilePath); } catch { }
-
-                pictureBox.Click += (s, e) =>
-                {
-                    var clickedPhoto = ((PictureBox)s).Tag as PhotoMetadata;
-                    new PhotoEditForm(clickedPhoto).ShowDialog();
-                };
+                try { pictureBox.Load(thumbPath); } catch { }
+                pictureBox.Click += PictureBox_Click;
 
                 Controls.Add(pictureBox);
-                y += 160;
+                x += thumbWidth + margin;
+            }
+        }
+
+        private void PictureBox_Click(object sender, EventArgs e)
+        {
+            if (sender is PictureBox pb && pb.Tag is PhotoMetadata photo)
+            {
+                var editForm = new PhotoEditForm(photo);
+                editForm.ShowDialog();
             }
         }
     }

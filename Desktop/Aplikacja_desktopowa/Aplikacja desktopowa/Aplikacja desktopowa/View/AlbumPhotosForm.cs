@@ -25,7 +25,8 @@ namespace Aplikacja_desktopowa.View
         {
             _albumId = albumId;
             Text = "Zdjêcia w albumie";
-            Load += AlbumPhotosForm_Load;
+            Width = 900;
+            Height = 700;
             AutoScroll = true;
 
             buttonDeleteAlbum = new Button
@@ -72,6 +73,13 @@ namespace Aplikacja_desktopowa.View
             {
                 textBoxTagFilter.Visible = comboBoxSortBy.SelectedItem.ToString() == "Tag";
             };
+
+            Load += AlbumPhotosForm_Load;
+
+            this.Resize += (s, e) =>
+            {
+                if (currentPhotos != null) DisplayPhotos(currentPhotos);
+            };
         }
 
         private async void AlbumPhotosForm_Load(object sender, EventArgs e)
@@ -92,9 +100,8 @@ namespace Aplikacja_desktopowa.View
             }
         }
 
-        private void DisplayPhotos(List<PhotoMetadata> photos)
+        private async void DisplayPhotos(List<PhotoMetadata> photos)
         {
-            // Usuñ stare PictureBoxy, zostaw kontrolki sortowania i przycisk usuwania
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
                 var ctrl = Controls[i];
@@ -102,21 +109,50 @@ namespace Aplikacja_desktopowa.View
                     Controls.RemoveAt(i);
             }
 
-            int y = 50;
+            int margin = 10;
+            int thumbWidth = 100;
+            int thumbHeight = 100;
+            int startY = 50;
+            int x = margin;
+            int y = startY;
+            int maxWidth = this.ClientSize.Width;
+
             foreach (var photo in photos)
             {
+                string thumbFileName = photo.Id + "_thumb.jpg";
+                string thumbPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), thumbFileName);
+
+                if (!System.IO.File.Exists(thumbPath))
+                {
+                    string sanitizedFileName = System.Text.RegularExpressions.Regex.Replace(
+                        photo.Id + System.IO.Path.GetExtension(photo.FilePath), @"[<>:""/\\|?*]", "_");
+                    string tempOriginalPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), sanitizedFileName);
+                    await _photoService.DownloadPhotoByUrlAsync(photo.FilePath, tempOriginalPath);
+
+                    PhotoService.CreateThumbnail(tempOriginalPath, thumbPath, thumbWidth, thumbHeight);
+
+                    try { System.IO.File.Delete(tempOriginalPath); } catch { }
+                }
+
+                if (x + thumbWidth + margin > maxWidth)
+                {
+                    x = margin;
+                    y += thumbHeight + margin;
+                }
+
                 var pictureBox = new PictureBox
                 {
-                    Location = new System.Drawing.Point(10, y),
-                    Size = new System.Drawing.Size(100, 100),
+                    Location = new System.Drawing.Point(x, y),
+                    Size = new System.Drawing.Size(thumbWidth, thumbHeight),
                     SizeMode = PictureBoxSizeMode.Zoom,
                     Cursor = Cursors.Hand,
                     Tag = photo
                 };
-                try { pictureBox.Load(photo.FilePath); } catch { }
+                try { pictureBox.Load(thumbPath); } catch { }
                 pictureBox.Click += Photo_Click;
                 Controls.Add(pictureBox);
-                y += 110;
+
+                x += thumbWidth + margin;
             }
         }
 

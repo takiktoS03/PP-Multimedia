@@ -1,10 +1,11 @@
-using System;
-using System.Windows.Forms;
-using System.Threading.Tasks;
-using Aplikacja_desktopowa.Service;
 using Aplikacja_desktopowa.Model;
-using System.Collections.Generic;
+using Aplikacja_desktopowa.Service;
 using Aplikacja_desktopowa.View.Utils;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View
 {
@@ -63,45 +64,25 @@ namespace Aplikacja_desktopowa.View
         private async void AddPhotosButton_Click(object sender, EventArgs e)
         {
             var albumId = (string)((Button)sender).Tag;
-            using (var dialog = new OpenFileDialog())
+            using (var addPhotosForm = new AddPhotosForm())
             {
-                dialog.Filter = "Obrazy (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png";
-                dialog.Multiselect = true;
-                if (dialog.ShowDialog() == DialogResult.OK)
+                if (addPhotosForm.ShowDialog() == DialogResult.OK)
                 {
-                    foreach (var filePath in dialog.FileNames)
+                    for (int i = 0; i < addPhotosForm.PhotoMetadatas.Count; i++)
                     {
-                        // Prosty input box do pobrania danych od u¿ytkownika
-                        string title = Prompt.ShowDialog("Tytu³ zdjêcia:", "Dodaj zdjêcie");
-                        string description = Prompt.ShowDialog("Opis zdjêcia:", "Dodaj zdjêcie");
-                        string location = Prompt.ShowDialog("Lokalizacja:", "Dodaj zdjêcie");
-                        string tagsInput = Prompt.ShowDialog("Tagi (oddzielone przecinkami):", "Dodaj zdjêcie");
-                        var tags = new List<string>();
-                        if (!string.IsNullOrWhiteSpace(tagsInput))
-                            tags = new List<string>(tagsInput.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+                        var photo = addPhotosForm.PhotoMetadatas[i];
+                        var filePath = addPhotosForm.LocalFilePaths[i];
 
-                        // Upload pliku do Storage i pobierz URL
-                        string fileNameInStorage = Guid.NewGuid().ToString() + System.IO.Path.GetExtension(filePath);
+                        string fileNameInStorage = Guid.NewGuid().ToString() + Path.GetExtension(filePath);
                         string fileUrl = await _photoService.UploadPhotoToStorageAsync(filePath, fileNameInStorage);
 
-                        // Utwórz PhotoMetadata z nowymi polami
-                        var photo = new PhotoMetadata
-                        {
-                            Title = title,
-                            Description = description,
-                            Location = location,
-                            Tags = tags,
-                            FilePath = fileUrl,
-                            UploadedAt = DateTime.UtcNow,
-                            Id = null // zostanie ustawione w AddPhotoAndGetIdAsync
-                        };
+                        photo.FilePath = fileUrl;
+                        photo.Id = null;
 
                         string photoId = await _photoService.AddPhotoAndGetIdAsync(photo, filePath);
-
-                        // Dodaj powi¹zanie do album_photos
                         await _albumService.AddPhotoToAlbumAsync(albumId, photoId);
                     }
-                    MessageBox.Show("Zdjêcia zosta³y dodane do albumu.");
+                    MessageBox.Show("Photos have been added to the album.");
                 }
             }
         }
