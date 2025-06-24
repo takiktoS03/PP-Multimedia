@@ -22,6 +22,7 @@ import com.example.multimedia.ui.gallery.*
 import com.example.multimedia.ui.home.HomeViewModel
 import com.example.multimedia.ui.pages.*
 import com.example.multimedia.ui.login.LoginViewModel
+import com.example.multimedia.ui.sideBar.DrawerScaffold
 import com.example.multimedia.ui.veryfication.VerificationViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -136,24 +137,44 @@ fun AppNavHost(
                 }
 
                 composable("home") {
-                    HomeScreenWithDrawer(navController)
+                    DrawerScaffold(
+                        navController = navController,
+                        currentRoute = "home",
+                        title = "MultiMediaApp"
+                    ) {
+                        val viewModel = remember { HomeViewModel() }
+                        val titleState = viewModel.text.collectAsState()
+                        val loading = viewModel.isLoading.collectAsState()
+                        HomeScreen(titleState.value, loading.value)
+                    }
                 }
 
                 composable("gallery") {
-                    GalleryScreen(navController = navController)
+                    DrawerScaffold(
+                        navController = navController,
+                        currentRoute = "gallery",
+                        title = "Galeria"
+                    ) {
+                        GalleryScreen(navController = navController)
+                    }
                 }
 
-                composable(route = "account") {
-                    AccountScreen(
+                composable("account") {
+                    DrawerScaffold(
                         navController = navController,
-                        onLogout = {
-                            loginViewModel.resetForm()
-                            FirebaseAuth.getInstance().signOut()
-                            navController.navigate("login") {
-                                popUpTo("home") { inclusive = true }
+                        currentRoute = "account",
+                        title = "Konto"
+                    ) {
+                        AccountScreen(
+                            navController = navController,
+                            onLogout = {
+                                FirebaseAuth.getInstance().signOut()
+                                navController.navigate("login") {
+                                    popUpTo("home") { inclusive = true }
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
 
                 composable("location_picker") {
@@ -171,7 +192,13 @@ fun AppNavHost(
                     ResetPasswordScreen(navController)
                 }
                 composable("map_with_photos") {
-                    MapWithPhotosScreen(onBack = { navController.popBackStack() })
+                    DrawerScaffold(
+                        navController = navController,
+                        currentRoute = "map_with_photos",
+                        title = "Mapa zdjęć"
+                    ) {
+                        MapWithPhotosScreen(onBack = { navController.popBackStack() })
+                    }
                 }
             }
         }

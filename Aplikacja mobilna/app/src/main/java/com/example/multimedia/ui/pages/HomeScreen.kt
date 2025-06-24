@@ -36,10 +36,11 @@ fun HomeScreen(title: String, isLoading: Boolean) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "👋 Witaj w MultimediaApp!",
+                text = "Witaj w MultimediaApp!",
                 style = MaterialTheme.typography.headlineLarge,
-                fontSize = 28.sp
+                fontSize = 26.sp
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -55,7 +56,8 @@ fun HomeScreen(title: String, isLoading: Boolean) {
                     
                     🏠 Stroną główną  
                     🖼️ Galerią  
-                    👤 Panelem konta
+                    📍 Mapą twoich zdjęć
+                    👤 Panelem konta              
                     
                     Kliknij ikonę menu w lewym górnym rogu, aby rozwinąć lub schować panel. 
                     Zalogowany użytkownik może przeglądać zasoby i edytować dane konta.

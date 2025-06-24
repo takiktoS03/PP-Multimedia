@@ -93,6 +93,8 @@ dependencies {
 
     // Multimedia / media3
     implementation(libs.androidx.media3.common.ktx)
+    implementation (libs.androidx.datastore.preferences)
+
 
     // Hilt
     implementation(libs.hilt.android)

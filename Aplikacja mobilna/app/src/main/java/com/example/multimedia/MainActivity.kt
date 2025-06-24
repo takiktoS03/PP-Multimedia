@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MultimediaTheme {
                 val navController = rememberNavController()
-                AppNavHost(navController = navController, lifecycleScope = lifecycleScope)
+                AppNavHost(navController, lifecycleScope)
             }
         }
     }

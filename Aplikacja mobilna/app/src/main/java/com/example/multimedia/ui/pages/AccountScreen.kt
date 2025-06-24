@@ -8,12 +8,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.multimedia.R
 import com.example.multimedia.ui.sideBar.DrawerScaffold
+import com.example.multimedia.ui.theme.ThemeManager
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
+import androidx.compose.material.icons.Icons
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,6 +29,11 @@ fun AccountScreen(
     val user = FirebaseAuth.getInstance().currentUser
     val isAnonymous = user?.isAnonymous ?: true
     val email = user?.email ?: "Użytkownik gość"
+
+    val context = LocalContext.current
+    val darkThemeFlow = remember { ThemeManager.isDarkTheme(context) }
+    val isDark = darkThemeFlow.collectAsState(initial = false)
+    val coroutineScope = rememberCoroutineScope()
 
     DrawerScaffold(
         navController = navController,
@@ -58,6 +68,42 @@ fun AccountScreen(
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = "Tryb jasny / ciemny",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Switch(
+                        checked = isDark.value,
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                ThemeManager.toggleTheme(context, enabled)
+                            }
+                        },
+                        thumbContent = {
+                            Icon(
+                                painter = painterResource(
+                                    id = if (isDark.value)
+                                        R.drawable.baseline_dark_mode_24
+                                    else
+                                        R.drawable.baseline_sunny_24
+                                ),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    )
+                }
 
                 Button(onClick = {
                     FirebaseAuth.getInstance().signOut()
