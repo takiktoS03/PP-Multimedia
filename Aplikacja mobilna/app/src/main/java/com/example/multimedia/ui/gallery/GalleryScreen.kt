@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -36,6 +37,9 @@ import com.example.multimedia.ui.sideBar.DrawerScaffold
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +59,9 @@ fun GalleryScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+    var expandedPhoto by remember { mutableStateOf<Photo?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+
     // Snackbar loop
     LaunchedEffect(Unit) {
         for (message in snackbarMessages) {
@@ -67,8 +74,7 @@ fun GalleryScreen(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris ->
         if (uris.isNotEmpty()) {
-            selectedImageUris.clear()
-            selectedImageUris.addAll(uris)
+            viewModel.setPendingImageUris(uris)
             viewModel.showEditDialog(emptyList())
         }
     }
@@ -102,14 +108,17 @@ fun GalleryScreen(
                 viewModel.dismissDialog()
             },
             onSubmit = { title, desc, loc, tags ->
+                val safeLocation = loc.ifBlank { "Nieznana lokalizacja" }.take(200)
+                val safeTags = tags.map { it.trim() }.filter { it.isNotEmpty() }
+
                 if (viewModel.selectedPhotos.isNotEmpty()) {
-                    Log.d("GalleryScreen","onSubmit selectedPhotos: title=$title, desc=$desc, loc=$loc, tags=$tags")
+                    Log.d("GalleryScreen","onSubmit selectedPhotos: title=$title, desc=$desc, loc=$safeLocation, tags=$safeTags")
                     viewModel.selectedPhotos.forEach { photo ->
                         val updated = photo.copy(
                             title = title,
                             description = desc,
-                            location = loc,
-                            tags = tags
+                            location = safeLocation,
+                            tags = safeTags
                         )
                         viewModel.updatePhoto(updated)
                     }
@@ -117,23 +126,23 @@ fun GalleryScreen(
                     selectedPhotoIds.clear()
                     selectionMode = false
                     viewModel.dismissDialog()
-                }
-                else if (selectedImageUris.isNotEmpty()) {
+                } else if (viewModel.pendingImageUris.isNotEmpty()) {
                     val failedUris = mutableListOf<Uri>()
                     coroutineScope.launch {
-                        selectedImageUris.forEach { uri ->
-                            val success = CompletableDeferred<Boolean>()
+                        viewModel.pendingImageUris.forEach { uri ->
+                        val success = CompletableDeferred<Boolean>()
                             val locationFromExif = getExifLocation(context, uri) ?: ""
-                            val locationToUse = loc.ifBlank { locationFromExif }
-                            Log.d("GalleryScreen","onSubmit selectedImageUris: title=$title, desc=$desc, loc=$loc, tags=$tags")
+                            val locationToUse = safeLocation.ifBlank { locationFromExif }
+                            Log.d("GalleryScreen","onSubmit selectedImageUris: title=$title, desc=$desc, loc=$locationToUse, tags=$safeTags")
                             viewModel.uploadPhoto(
                                 uri = uri,
                                 title = title,
                                 description = desc,
                                 location = locationToUse,
-                                tags = tags,
+                                tags = safeTags,
                                 onSuccess = { success.complete(true) },
-                                onFailure = {
+                                onFailure = { ex ->
+                                    Log.e("GalleryScreen", "Upload failed for $uri: ${ex.message}", ex)
                                     failedUris.add(uri)
                                     success.complete(false)
                                 }
@@ -148,9 +157,51 @@ fun GalleryScreen(
                             }
                         }
                         selectedImageUris.clear()
+                        viewModel.clearPendingImageUris()
                         viewModel.dismissDialog()
                         Log.d("GalleryScreen","dismiss called")
                     }
+                }
+            }
+        )
+    }
+
+    if (expandedPhoto != null) {
+        AlertDialog(
+            onDismissRequest = { expandedPhoto = null },
+            confirmButton = {},
+            text = {
+                Image(
+                    painter = rememberAsyncImagePainter(expandedPhoto!!.file_path),
+                    contentDescription = "Podgląd",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                )
+            }
+        )
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Potwierdzenie usunięcia") },
+            text = { Text("Czy na pewno chcesz usunąć ${selectedPhotoIds.size} zdjęcie(-ć)?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
+                    selectedPhotos.forEach { viewModel.deletePhoto(it) }
+                    selectedPhotoIds.clear()
+                    selectionMode = false
+                    showDeleteConfirmation = false
+                }) {
+                    Text("Tak")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text("Anuluj")
                 }
             }
         )
@@ -167,77 +218,79 @@ fun GalleryScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    if (selectionMode) {
-                        Text("${selectedPhotoIds.size} zaznaczone")
-                    } else {
-                        Text("Galeria")
-                    }
-                },
-                actions = {
-                    if (selectionMode) {
-                        IconButton(onClick = {
-                            val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
-                            selectedPhotos.forEach { viewModel.deletePhoto(it) }
-                            selectedPhotoIds.clear()
-                            selectionMode = false
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Usuń")
-                        }
+    val dynamicTitle = if (selectionMode) "${selectedPhotoIds.size} zaznaczone" else "Galeria"
 
-                        IconButton(onClick = {
-                            val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
-                            viewModel.showEditDialog(selectedPhotos)
-                        }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edytuj")
-                        }
-
-                        IconButton(onClick = {
-                            val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
-                            folderPickerLauncher.launch(null)
-                        }) {
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Pobierz")
-                        }
-                    }
+    DrawerScaffold(
+        navController = navController,
+        currentRoute = "gallery",
+        title = dynamicTitle,
+        snackbarHostState = snackbarHostState,
+        actions = {
+            if (selectionMode) {
+                IconButton(onClick = {
+                    showDeleteConfirmation = true
+                }) {
+                    Icon(Icons.Default.Delete, contentDescription = "Usuń")
                 }
-            )
+
+                IconButton(onClick = {
+                    val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
+                    viewModel.showEditDialog(selectedPhotos)
+                }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edytuj")
+                }
+
+                IconButton(onClick = {
+                    val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
+                    folderPickerLauncher.launch(null)
+                }) {
+                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Pobierz")
+                }
+            }
         }
-    ) { padding ->
+    )
+    { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(8.dp)
         ) {
-            Text(
-                text = "Galeria",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-
-            Button(
-                onClick = { pickImagesLauncher.launch("image/*") },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(8.dp)
-            ) {
-                Text("Dodaj zdjęcia")
+            if (!selectionMode) {
+                Text(
+                    text = "Galeria",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
             }
 
-            Button(
-                onClick = { showFilterSheet = true },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(8.dp)
-            ) {
-                Text("Filtruj / Sortuj")
+            if (!selectionMode) {
+                Button(
+                    onClick = { pickImagesLauncher.launch("image/*") },
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(8.dp)
+                ) {
+                    Text("Dodaj zdjęcia")
+                }
+
+                Button(
+                    onClick = { showFilterSheet = true },
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(8.dp)
+                ) {
+                    Text("Filtruj / Sortuj")
+                }
             }
 
-            LazyColumn {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 items(photos, key = { it.id }) { photo ->
                     val isSelected by remember(selectedPhotoIds, photo.id) {
                         derivedStateOf { selectedPhotoIds.contains(photo.id) }
@@ -257,7 +310,8 @@ fun GalleryScreen(
                                 selectionMode = true
                                 selectedPhotoIds.add(photo.id)
                             }
-                        }
+                        },
+                        onPreview = { expandedPhoto = it }
                     )
                 }
             }
@@ -270,8 +324,10 @@ fun PhotoItem(
     photo: Photo,
     isSelected: Boolean,
     onClick: () -> Unit,
-    onLongClick: () -> Unit
-) {
+    onLongClick: () -> Unit,
+    onPreview: (Photo) -> Unit
+)
+ {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -283,19 +339,33 @@ fun PhotoItem(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = { onLongClick() },
-                    onTap = { onClick() }
+                    onTap = {
+                        if (isSelected) onClick() else onPreview(photo)
+                    }
+
                 )
             }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+//            Image(
+//                painter = rememberAsyncImagePainter(photo.file_path),
+//                contentDescription = "Zdjęcie",
+//                contentScale = ContentScale.Crop,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(200.dp)
+//            )
             Image(
-                painter = rememberAsyncImagePainter(photo.file_path),
-                contentDescription = "Zdjęcie",
+                painter = rememberAsyncImagePainter(
+                    model = photo.file_path
+                ),
+                contentDescription = "Miniaturka",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .aspectRatio(1f) // kwadrat
             )
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = photo.title, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(4.dp))

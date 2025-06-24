@@ -41,25 +41,27 @@ fun PhotoUploadDialog(
 
     // Nasłuchuj lokalizacji wybranej z mapy
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
-    LaunchedEffect(savedStateHandle?.get<LatLng>("picked_location")) {
-        savedStateHandle?.get<LatLng>("picked_location")?.let { latLng ->
-            val geocoder = Geocoder(context, Locale.getDefault())
-            val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
-            if (!addresses.isNullOrEmpty()) {
-                val address = addresses[0]
-                val country = address.countryName ?: "Nieznany kraj"
-                val locality = address.locality ?: "Nieznane miasto"
-                val street = address.thoroughfare ?: "Nieznana ulica"
-                val number = address.subThoroughfare ?: "Nieznany numer"
-                location = "$locality, $country, $street, $number"
-                location = listOfNotNull(locality, country, street ,number)
-                    .filter { it.isNotBlank() }
-                    .joinToString(", ")
-            } else {
-                location = "${latLng.latitude}, ${latLng.longitude}"
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { savedStateHandle?.get<LatLng>("picked_location") }
+            .collect { picked ->
+                if (picked != null) {
+                    val geocoder = Geocoder(context, Locale.getDefault())
+                    val addresses = geocoder.getFromLocation(picked.latitude, picked.longitude, 1)
+                    location = if (!addresses.isNullOrEmpty()) {
+                        val address = addresses[0]
+                        val country = address.countryName ?: "Nieznany kraj"
+                        val locality = address.locality ?: "Nieznane miasto"
+                        val street = address.thoroughfare ?: "Nieznana ulica"
+                        val number = address.subThoroughfare ?: "Nieznany numer"
+                        listOfNotNull(locality, country, street, number).joinToString(", ")
+                    } else {
+                        "${picked.latitude}, ${picked.longitude}"
+                    }
+
+                    savedStateHandle?.remove<LatLng>("picked_location")
+                }
             }
-            savedStateHandle.remove<LatLng>("picked_location")
-        }
     }
 
     AlertDialog(
@@ -71,8 +73,11 @@ fun PhotoUploadDialog(
                     .split(",")
                     .map { it.trim() }
                     .filter { it.isNotEmpty() }
-                Log.d("PhotoUploadDialog", "SUBMIT: title=$title, desc=$description, loc=$location, tags=$tags")
-                onSubmit(title, description, location, tags)
+
+                val safeLocation = location.replace(",", " · ") // 🔒 zabezpieczenie przecinków
+                Log.d("PhotoUploadDialog", "SUBMIT: title=$title, desc=$description, loc=$safeLocation, tags=$tags")
+                onSubmit(title, description, safeLocation, tags)
+
                 Log.d("PhotoUploadDialog", "CALLING onDismiss()")
                 onDismiss()
             },
@@ -131,7 +136,9 @@ fun PhotoUploadDialog(
                                         val address = addresses[0]
                                         val country = address.countryName ?: "Nieznany kraj"
                                         val locality = address.locality ?: "Nieznane miasto"
-                                        location = "$locality, $country"
+                                        val street = address.thoroughfare ?: "Nieznana ulica"
+                                        val number = address.subThoroughfare ?: "Nieznany numer"
+                                        location = "$locality, $country, $street, $number"
                                     } else {
                                         location = "Brak danych lokalizacji"
                                     }

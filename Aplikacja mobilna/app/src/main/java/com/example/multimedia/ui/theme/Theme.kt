@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF6338FF),
+    primary = Color(0xFF5C32F6),
     secondary = Color(0xFF0036FF),
 )
 

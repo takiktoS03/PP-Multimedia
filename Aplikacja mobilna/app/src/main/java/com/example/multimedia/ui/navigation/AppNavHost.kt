@@ -137,45 +137,25 @@ fun AppNavHost(
                 }
 
                 composable("home") {
-                    DrawerScaffold(
-                        navController = navController,
-                        currentRoute = "home",
-                        title = "MultiMediaApp"
-                    ) {
-                        val viewModel = remember { HomeViewModel() }
-                        val titleState = viewModel.text.collectAsState()
-                        val loading = viewModel.isLoading.collectAsState()
-                        HomeScreen(titleState.value, loading.value)
-                    }
+                    HomeScreenWithDrawer(navController)
                 }
 
                 composable("gallery") {
-                    DrawerScaffold(
-                        navController = navController,
-                        currentRoute = "gallery",
-                        title = "Galeria"
-                    ) {
-                        GalleryScreen(navController = navController)
-                    }
+                    GalleryScreen(navController = navController)
                 }
 
                 composable("account") {
-                    DrawerScaffold(
+                    AccountScreen(
                         navController = navController,
-                        currentRoute = "account",
-                        title = "Konto"
-                    ) {
-                        AccountScreen(
-                            navController = navController,
-                            onLogout = {
-                                FirebaseAuth.getInstance().signOut()
-                                navController.navigate("login") {
-                                    popUpTo("home") { inclusive = true }
-                                }
+                        onLogout = {
+                            loginViewModel.resetForm()
+                            FirebaseAuth.getInstance().signOut()
+                            navController.navigate("login") {
+                                popUpTo("home") { inclusive = true }
                             }
-                        )
+                        }
+                    )
                     }
-                }
 
                 composable("location_picker") {
                     LocationPickerScreen(
@@ -192,13 +172,7 @@ fun AppNavHost(
                     ResetPasswordScreen(navController)
                 }
                 composable("map_with_photos") {
-                    DrawerScaffold(
-                        navController = navController,
-                        currentRoute = "map_with_photos",
-                        title = "Mapa zdjęć"
-                    ) {
-                        MapWithPhotosScreen(onBack = { navController.popBackStack() })
-                    }
+                    MapWithPhotosScreen(onBack = { navController.popBackStack() })
                 }
             }
         }

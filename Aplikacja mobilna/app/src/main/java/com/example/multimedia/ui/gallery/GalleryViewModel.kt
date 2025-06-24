@@ -2,6 +2,7 @@ package com.example.multimedia.ui.gallery
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -81,16 +82,19 @@ class GalleryViewModel @Inject constructor(
         onFailure: (Exception) -> Unit
     ) {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+        val finalLocation = location.ifBlank { "Nieznana lokalizacja" }.take(200) // ⬅ ZMIANA
 
         val meta = Photo(
             title       = title,
             description = description,
-            location    = location,
+            location    = finalLocation, // ⬅ ZMIANA
             tags        = tags,
             file_path   = "",
             uploaded_at = Timestamp.now(),
             user_id     = currentUserId
         )
+        Log.d("uploadPhoto", "Uploading photo with location = '$location'")
+
         repository.uploadPhoto(uri, meta, onSuccess, onFailure)
     }
 
@@ -127,6 +131,18 @@ class GalleryViewModel @Inject constructor(
         photoBeingEdited = null
         selectedPhotos = emptyList()
     }
+
+    private var _pendingImageUris by mutableStateOf<List<Uri>>(emptyList())
+    val pendingImageUris: List<Uri> get() = _pendingImageUris
+
+
+    fun setPendingImageUris(uris: List<Uri>) {
+        _pendingImageUris = uris
+    }
+    fun clearPendingImageUris() {
+        _pendingImageUris = emptyList()
+    }
+
 
     // Pobieranie zdjec na pamiec telefonu
     fun downloadPhotosToFolder(

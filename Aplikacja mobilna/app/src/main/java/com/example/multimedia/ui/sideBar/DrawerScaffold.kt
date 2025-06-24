@@ -25,6 +25,7 @@ fun DrawerScaffold(
     currentRoute: String,
     title: String,
     snackbarHostState: SnackbarHostState = SnackbarHostState(),
+    actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -33,78 +34,56 @@ fun DrawerScaffold(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    // 🔹 Tło obrazkowe
-                    Image(
-                        painter = painterResource(id = R.drawable.drawer_background), // <- Upewnij się że plik jest w drawable
-                        contentDescription = "Tło paska bocznego",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-
-                    // 🔹 Zawartość paska bocznego
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    ) {
-                        Text("Menu", style = MaterialTheme.typography.titleLarge)
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        NavigationDrawerItem(
-                            label = { Text("Home") },
-                            selected = currentRoute == "home",
-                            icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                            onClick = {
-                                navController.navigate("home") {
-                                    launchSingleTop = true
-                                    popUpTo(0)
-                                }
-                                scope.launch { drawerState.close() }
-                            }
-                        )
-                        NavigationDrawerItem(
-                            label = { Text("Gallery") },
-                            selected = currentRoute == "gallery",
-                            icon = { Icon(painterResource(id = R.drawable.ic_menu_gallery), null) },
-                            onClick = {
-                                navController.navigate("gallery") {
-                                    launchSingleTop = true
-                                    popUpTo(0)
-                                }
-                                scope.launch { drawerState.close() }
-                            }
-                        )
-                        NavigationDrawerItem(
-                            label = { Text("Maps of Photos") },
-                            selected = currentRoute == "map_with_photos",
-                            icon = { Icon(painterResource(id = R.drawable.baseline_map_24), null) },
-                            onClick = {
-                                navController.navigate("map_with_photos") {
-                                    launchSingleTop = true
-                                    popUpTo(0)
-                                }
-                                scope.launch { drawerState.close() }
-                            }
-                        )
-                        NavigationDrawerItem(
-                            label = { Text("Konto") },
-                            selected = currentRoute == "account",
-                            icon = { Icon(Icons.Default.Person, null) },
-                            onClick = {
-                                navController.navigate("account") {
-                                    launchSingleTop = true
-                                    popUpTo(0)
-                                }
-                                scope.launch { drawerState.close() }
-                            }
-                        )
+            ModalDrawerSheet {
+                Text("Menu", modifier = Modifier.padding(16.dp))
+                NavigationDrawerItem(
+                    label = { Text("Home") },
+                    selected = currentRoute == "home",
+                    icon = { Icon(Icons.Default.Home, null) },
+                    onClick = {
+                        navController.navigate("home") {
+                            launchSingleTop = true
+                            popUpTo("home") { inclusive = true }
+                        }
+                        scope.launch { drawerState.close() }
                     }
-                }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Gallery") },
+                    selected = currentRoute == "gallery",
+                    icon = { Icon(painterResource(id = R.drawable.ic_menu_gallery), null) },
+                    onClick = {
+                        navController.navigate("gallery") {
+                            launchSingleTop = true
+                            popUpTo("home") { inclusive = false }
+                        }
+                        scope.launch { drawerState.close() }
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Maps of Photos") },
+                    selected = currentRoute == "map_with_photos",
+                    icon = { Icon(painterResource(id = R.drawable.baseline_map_24), null) },
+                    onClick = {
+                        navController.navigate("map_with_photos") {
+                            launchSingleTop = true
+                            popUpTo("home") { inclusive = false }
+                        }
+                        scope.launch { drawerState.close() }
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Konto") },
+                    selected = currentRoute == "account",
+                    icon = { Icon(Icons.Default.Person, null) },
+                    onClick = {
+                        navController.navigate("account") {
+                            launchSingleTop = true
+                            popUpTo("home") { inclusive = false }
+                        }
+                        scope.launch { drawerState.close() }
+                    }
+                )
             }
         }
     ) {
@@ -116,7 +95,8 @@ fun DrawerScaffold(
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
                         }
-                    }
+                    },
+                    actions = actions
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
