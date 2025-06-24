@@ -9,5 +9,6 @@ data class Photo(
     val file_path: String = "",
     val location: String = "",
     val tags: List<String> = emptyList(),
-    val uploaded_at: Timestamp? = null
+    val uploaded_at: Timestamp? = null,
+    val user_id: String? = null
 )

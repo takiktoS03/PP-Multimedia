@@ -1,17 +1,25 @@
 package com.example.multimedia.ui.gallery
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.documentfile.provider.DocumentFile
 import com.example.multimedia.data.model.Photo
 import com.example.multimedia.data.repository.PhotoRepository
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import javax.inject.Inject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
@@ -22,9 +30,21 @@ class GalleryViewModel @Inject constructor(
     }
     val text: LiveData<String> = _text
 
-    val rawPhotos: LiveData<List<Photo>> = repository.getPhotos()
+    val rawPhotos: LiveData<List<Photo>>
     private val _filters = MutableLiveData<Pair<String?, List<String>>>(null to emptyList())
     val filters: LiveData<Pair<String?, List<String>>> = _filters
+
+    var isEditDialogVisible by mutableStateOf(false)
+        private set
+    var photoBeingEdited by mutableStateOf<Photo?>(null)
+        private set
+    var selectedPhotos by mutableStateOf<List<Photo>>(emptyList())
+        private set
+
+    init {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+        rawPhotos = repository.getPhotos(currentUserId)
+    }
 
     val photos: LiveData<List<Photo>> = MediatorLiveData<List<Photo>>().apply {
         fun update() {
@@ -60,13 +80,16 @@ class GalleryViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
         val meta = Photo(
             title       = title,
             description = description,
             location    = location,
             tags        = tags,
             file_path   = "",
-            uploaded_at = Timestamp.now()
+            uploaded_at = Timestamp.now(),
+            user_id     = currentUserId
         )
         repository.uploadPhoto(uri, meta, onSuccess, onFailure)
     }
@@ -89,6 +112,37 @@ class GalleryViewModel @Inject constructor(
 
     fun refresh() {
         viewModelScope.launch {
+        }
+    }
+
+    // 2 funkcje obslugujace edycje zdjec (+ powrot z mapy)
+    fun showEditDialog(photos: List<Photo>) {
+        selectedPhotos = photos
+        isEditDialogVisible = true
+        photoBeingEdited = photos.firstOrNull()
+    }
+
+    fun dismissDialog() {
+        isEditDialogVisible = false
+        photoBeingEdited = null
+        selectedPhotos = emptyList()
+    }
+
+    // Pobieranie zdjec na pamiec telefonu
+    fun downloadPhotosToFolder(
+        context: Context,
+        folder: DocumentFile,
+        onComplete: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            var allSuccess = true
+            for (photo in selectedPhotos) {
+                val success = repository.downloadPhotoToFolder(context, folder, photo)
+                if (!success) allSuccess = false
+            }
+            withContext(Dispatchers.Main) {
+                onComplete(allSuccess)
+            }
         }
     }
 

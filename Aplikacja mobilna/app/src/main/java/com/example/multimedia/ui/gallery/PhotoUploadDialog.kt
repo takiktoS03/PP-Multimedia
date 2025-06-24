@@ -3,13 +3,16 @@ package com.example.multimedia.ui.gallery
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.multimedia.data.model.Photo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -25,18 +28,19 @@ fun PhotoUploadDialog(
     photo: Photo? = null,
     onDismiss: () -> Unit,
     onSubmit: (title: String, description: String, location: String, tags: List<String>) -> Unit,
-    navController: NavController
+    navController: NavController,
+    viewModel: GalleryViewModel = hiltViewModel()
 ) {
-    var title by remember { mutableStateOf(photo?.title ?: "") }
-    var description by remember { mutableStateOf(photo?.description ?: "") }
-    var location by remember { mutableStateOf(photo?.location ?: "") }
-    var tagsInput by remember { mutableStateOf(photo?.tags?.joinToString(", ") ?: "") }
+    var title by rememberSaveable { mutableStateOf(photo?.title ?: "") }
+    var description by rememberSaveable { mutableStateOf(photo?.description ?: "") }
+    var location by rememberSaveable { mutableStateOf(photo?.location ?: "") }
+    var tagsInput by rememberSaveable { mutableStateOf(photo?.tags?.joinToString(", ") ?: "") }
 
     val context = LocalContext.current
     val locationPermissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
     // Nasłuchuj lokalizacji wybranej z mapy
-    val savedStateHandle = remember { navController.currentBackStackEntry?.savedStateHandle }
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     LaunchedEffect(savedStateHandle?.get<LatLng>("picked_location")) {
         savedStateHandle?.get<LatLng>("picked_location")?.let { latLng ->
             val geocoder = Geocoder(context, Locale.getDefault())
@@ -45,7 +49,12 @@ fun PhotoUploadDialog(
                 val address = addresses[0]
                 val country = address.countryName ?: "Nieznany kraj"
                 val locality = address.locality ?: "Nieznane miasto"
-                location = "$locality, $country"
+                val street = address.thoroughfare ?: "Nieznana ulica"
+                val number = address.subThoroughfare ?: "Nieznany numer"
+                location = "$locality, $country, $street, $number"
+                location = listOfNotNull(locality, country, street ,number)
+                    .filter { it.isNotBlank() }
+                    .joinToString(", ")
             } else {
                 location = "${latLng.latitude}, ${latLng.longitude}"
             }
@@ -55,11 +64,20 @@ fun PhotoUploadDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        title   = { Text(if (photo == null) "Dodaj zdjęcie" else "Edytuj zdjęcie") },
         confirmButton = {
             TextButton(onClick = {
-                val tags = tagsInput.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                val tags = tagsInput
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                Log.d("PhotoUploadDialog", "SUBMIT: title=$title, desc=$description, loc=$location, tags=$tags")
                 onSubmit(title, description, location, tags)
-            }) {
+                Log.d("PhotoUploadDialog", "CALLING onDismiss()")
+                onDismiss()
+            },
+                //enabled = title.isNotBlank() && description.isNotBlank()
+            ) {
                 Text("Wyślij")
             }
         },
@@ -68,7 +86,6 @@ fun PhotoUploadDialog(
                 Text("Anuluj")
             }
         },
-        title = { Text("Wpisz dane zdjęcia") },
         text = {
             Column {
                 OutlinedTextField(

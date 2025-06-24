@@ -1,6 +1,8 @@
 package com.example.multimedia.ui.gallery
 
+import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -12,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +26,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -40,8 +44,9 @@ fun GalleryScreen(
     navController: NavController
 ) {
     val photos by viewModel.photos.observeAsState(emptyList())
-    var showDialog by remember { mutableStateOf(false) }
-    var editingPhoto by remember { mutableStateOf<Photo?>(null) }
+    val showDialog        by remember { derivedStateOf { viewModel.isEditDialogVisible } }
+    val editingPhoto      by remember { derivedStateOf { viewModel.photoBeingEdited } }
+
     val snackbarMessages = remember { Channel<String>(Channel.UNLIMITED) }
     val snackbarHostState = remember { SnackbarHostState() }
     val selectedPhotoIds = remember { mutableStateListOf<String>() }
@@ -50,6 +55,7 @@ fun GalleryScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+    // Snackbar loop
     LaunchedEffect(Unit) {
         for (message in snackbarMessages) {
             snackbarHostState.showSnackbar(message)
@@ -63,8 +69,28 @@ fun GalleryScreen(
         if (uris.isNotEmpty()) {
             selectedImageUris.clear()
             selectedImageUris.addAll(uris)
-            showDialog = true
-            editingPhoto = null
+            viewModel.showEditDialog(emptyList())
+        }
+    }
+
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            val folder = DocumentFile.fromTreeUri(context, uri)
+            val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            context.contentResolver.takePersistableUriPermission(uri, takeFlags)
+            if (folder != null) {
+                viewModel.downloadPhotosToFolder(context, folder) { success ->
+                    if (success) {
+                        snackbarMessages.trySend("Zdjęcia zapisane.")
+                    } else {
+                        snackbarMessages.trySend("Niektóre zdjęcia nie zostały zapisane.")
+                    }
+                    selectedPhotoIds.clear()
+                    selectionMode = false
+                }
+            }
         }
     }
 
@@ -73,30 +99,33 @@ fun GalleryScreen(
             photo = editingPhoto,
             navController = navController,
             onDismiss = {
-                showDialog = false
-                editingPhoto = null
+                viewModel.dismissDialog()
             },
             onSubmit = { title, desc, loc, tags ->
-                showDialog = false
-                if (editingPhoto != null) {
-                    val updatedPhoto = editingPhoto!!.copy(
-                        title = title,
-                        description = desc,
-                        location = loc,
-                        tags = tags
-                    )
-                    viewModel.updatePhoto(updatedPhoto)
-                    snackbarMessages.trySend("Zaktualizowano zdjęcie.")
-                    editingPhoto = null
+                if (viewModel.selectedPhotos.isNotEmpty()) {
+                    Log.d("GalleryScreen","onSubmit selectedPhotos: title=$title, desc=$desc, loc=$loc, tags=$tags")
+                    viewModel.selectedPhotos.forEach { photo ->
+                        val updated = photo.copy(
+                            title = title,
+                            description = desc,
+                            location = loc,
+                            tags = tags
+                        )
+                        viewModel.updatePhoto(updated)
+                    }
+                    snackbarMessages.trySend("Zaktualizowano ${viewModel.selectedPhotos.size} zdjęć.")
                     selectedPhotoIds.clear()
                     selectionMode = false
-                } else if (selectedImageUris.isNotEmpty()) {
+                    viewModel.dismissDialog()
+                }
+                else if (selectedImageUris.isNotEmpty()) {
                     val failedUris = mutableListOf<Uri>()
                     coroutineScope.launch {
                         selectedImageUris.forEach { uri ->
                             val success = CompletableDeferred<Boolean>()
                             val locationFromExif = getExifLocation(context, uri) ?: ""
                             val locationToUse = loc.ifBlank { locationFromExif }
+                            Log.d("GalleryScreen","onSubmit selectedImageUris: title=$title, desc=$desc, loc=$loc, tags=$tags")
                             viewModel.uploadPhoto(
                                 uri = uri,
                                 title = title,
@@ -119,6 +148,8 @@ fun GalleryScreen(
                             }
                         }
                         selectedImageUris.clear()
+                        viewModel.dismissDialog()
+                        Log.d("GalleryScreen","dismiss called")
                     }
                 }
             }
@@ -160,10 +191,16 @@ fun GalleryScreen(
 
                         IconButton(onClick = {
                             val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
-                            editingPhoto = selectedPhotos.firstOrNull()
-                            showDialog = true
+                            viewModel.showEditDialog(selectedPhotos)
                         }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edytuj")
+                        }
+
+                        IconButton(onClick = {
+                            val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
+                            folderPickerLauncher.launch(null)
+                        }) {
+                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Pobierz")
                         }
                     }
                 }
