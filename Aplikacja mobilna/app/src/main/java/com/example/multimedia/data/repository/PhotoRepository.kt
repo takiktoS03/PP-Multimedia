@@ -97,7 +97,7 @@ class PhotoRepository @Inject constructor(
             .set(photo)
     }
 
-    suspend fun downloadPhotoToFolder(
+    fun downloadPhotoToFolder(
         context: Context,
         folder: DocumentFile,
         photo: Photo

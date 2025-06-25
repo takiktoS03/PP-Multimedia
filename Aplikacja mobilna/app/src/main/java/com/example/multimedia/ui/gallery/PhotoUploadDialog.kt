@@ -28,8 +28,7 @@ fun PhotoUploadDialog(
     photo: Photo? = null,
     onDismiss: () -> Unit,
     onSubmit: (title: String, description: String, location: String, tags: List<String>) -> Unit,
-    navController: NavController,
-    viewModel: GalleryViewModel = hiltViewModel()
+    navController: NavController
 ) {
     var title by rememberSaveable { mutableStateOf(photo?.title ?: "") }
     var description by rememberSaveable { mutableStateOf(photo?.description ?: "") }
@@ -75,10 +74,7 @@ fun PhotoUploadDialog(
                     .filter { it.isNotEmpty() }
 
                 val safeLocation = location.replace(",", " · ") // 🔒 zabezpieczenie przecinków
-                Log.d("PhotoUploadDialog", "SUBMIT: title=$title, desc=$description, loc=$safeLocation, tags=$tags")
                 onSubmit(title, description, safeLocation, tags)
-
-                Log.d("PhotoUploadDialog", "CALLING onDismiss()")
                 onDismiss()
             },
                 //enabled = title.isNotBlank() && description.isNotBlank()

@@ -242,6 +242,7 @@ fun GalleryScreen(
 
                 IconButton(onClick = {
                     val selectedPhotos = photos.filter { selectedPhotoIds.contains(it.id) }
+                    viewModel.updateSelectedPhotos(selectedPhotos)
                     folderPickerLauncher.launch(null)
                 }) {
                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Pobierz")
@@ -304,6 +305,8 @@ fun GalleryScreen(
                                 if (isSelected) selectedPhotoIds.remove(photo.id)
                                 else selectedPhotoIds.add(photo.id)
                                 if (selectedPhotoIds.isEmpty()) selectionMode = false
+                            } else {
+                                expandedPhoto = photo
                             }
                         },
                         onLongClick = {
@@ -311,8 +314,7 @@ fun GalleryScreen(
                                 selectionMode = true
                                 selectedPhotoIds.add(photo.id)
                             }
-                        },
-                        onPreview = { expandedPhoto = it }
+                        }
                     )
                 }
             }
@@ -328,7 +330,7 @@ fun GalleryScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.95f))
+                .background(Color.Black.copy(alpha = 0.8f))
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = { expandedPhoto = null })
                 },
@@ -343,7 +345,6 @@ fun GalleryScreen(
 
                 FullScreenImagePreview(filePath = expandedPhoto!!.file_path, photo = expandedPhoto!!)
 
-                val context = LocalContext.current
                 var fileSize by remember { mutableStateOf("") }
                 var resolution by remember { mutableStateOf("") }
 

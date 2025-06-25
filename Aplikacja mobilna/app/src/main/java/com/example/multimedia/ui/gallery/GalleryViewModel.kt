@@ -109,20 +109,18 @@ class GalleryViewModel @Inject constructor(
         repository.updatePhoto(photo)
     }
 
-
     fun applyFilters(sort: String?, tags: List<String>) {
         _filters.value = sort to tags
     }
 
-    fun refresh() {
-        viewModelScope.launch {
-        }
-    }
-
-    // 2 funkcje obslugujace edycje zdjec (+ powrot z mapy)
     fun showEditDialog(photos: List<Photo>) {
         selectedPhotos = photos
         isEditDialogVisible = true
+        photoBeingEdited = photos.firstOrNull()
+    }
+
+    fun updateSelectedPhotos(photos: List<Photo>) {
+        selectedPhotos = photos
         photoBeingEdited = photos.firstOrNull()
     }
 
@@ -135,7 +133,6 @@ class GalleryViewModel @Inject constructor(
     private var _pendingImageUris by mutableStateOf<List<Uri>>(emptyList())
     val pendingImageUris: List<Uri> get() = _pendingImageUris
 
-
     fun setPendingImageUris(uris: List<Uri>) {
         _pendingImageUris = uris
     }
@@ -143,8 +140,6 @@ class GalleryViewModel @Inject constructor(
         _pendingImageUris = emptyList()
     }
 
-
-    // Pobieranie zdjec na pamiec telefonu
     fun downloadPhotosToFolder(
         context: Context,
         folder: DocumentFile,

@@ -27,8 +27,7 @@ fun PhotoItem(
     isSelected: Boolean,
     selectionMode: Boolean,
     onClick: () -> Unit,
-    onLongClick: () -> Unit,
-    onPreview: (Photo) -> Unit
+    onLongClick: () -> Unit
 )
 {
     Card(
@@ -39,16 +38,10 @@ fun PhotoItem(
                 if (isSelected) Modifier.border(2.dp, Color.Red)
                 else Modifier
             )
-            .pointerInput(isSelected) {
+            .pointerInput(selectionMode, isSelected) {
                 detectTapGestures(
-                    onLongPress = { onLongClick() },
-                    onTap = {
-                        if (selectionMode) {
-                            onClick()  // zaznacz/odznacz
-                        } else {
-                            onPreview(photo)  // podgląd
-                        }
-                    }
+                    onTap = { onClick() },
+                    onLongPress = { onLongClick() }
                 )
             }
     ) {
