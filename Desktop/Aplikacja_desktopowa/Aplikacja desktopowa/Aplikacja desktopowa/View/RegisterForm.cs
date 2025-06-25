@@ -62,6 +62,7 @@ namespace Aplikacja_desktopowa.View
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RegisterForm));
             this.textBoxEmail = new System.Windows.Forms.TextBox();
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.textBoxName = new System.Windows.Forms.TextBox();
@@ -75,84 +76,105 @@ namespace Aplikacja_desktopowa.View
             // 
             // textBoxEmail
             // 
-            this.textBoxEmail.Location = new System.Drawing.Point(100, 30);
+            this.textBoxEmail.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.textBoxEmail.Location = new System.Drawing.Point(591, 50);
             this.textBoxEmail.Name = "textBoxEmail";
-            this.textBoxEmail.Size = new System.Drawing.Size(200, 20);
+            this.textBoxEmail.Size = new System.Drawing.Size(374, 40);
             this.textBoxEmail.TabIndex = 0;
             // 
             // textBoxPassword
             // 
-            this.textBoxPassword.Location = new System.Drawing.Point(100, 70);
+            this.textBoxPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.textBoxPassword.Location = new System.Drawing.Point(591, 142);
             this.textBoxPassword.Name = "textBoxPassword";
-            this.textBoxPassword.Size = new System.Drawing.Size(200, 20);
+            this.textBoxPassword.Size = new System.Drawing.Size(374, 40);
             this.textBoxPassword.TabIndex = 1;
             this.textBoxPassword.UseSystemPasswordChar = true;
             // 
             // textBoxName
             // 
-            this.textBoxName.Location = new System.Drawing.Point(100, 110);
+            this.textBoxName.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.textBoxName.Location = new System.Drawing.Point(591, 246);
             this.textBoxName.Name = "textBoxName";
-            this.textBoxName.Size = new System.Drawing.Size(200, 20);
+            this.textBoxName.Size = new System.Drawing.Size(374, 40);
             this.textBoxName.TabIndex = 2;
             // 
             // buttonRegister
             // 
-            this.buttonRegister.Location = new System.Drawing.Point(100, 150);
+            this.buttonRegister.BackColor = System.Drawing.Color.MediumPurple;
+            this.buttonRegister.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.buttonRegister.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.buttonRegister.Location = new System.Drawing.Point(351, 411);
             this.buttonRegister.Name = "buttonRegister";
-            this.buttonRegister.Size = new System.Drawing.Size(75, 23);
+            this.buttonRegister.Size = new System.Drawing.Size(226, 64);
             this.buttonRegister.TabIndex = 3;
             this.buttonRegister.Text = "Register";
-            this.buttonRegister.UseVisualStyleBackColor = true;
+            this.buttonRegister.UseVisualStyleBackColor = false;
             this.buttonRegister.Click += new System.EventHandler(this.buttonRegister_Click);
             // 
             // buttonBack
             // 
-            this.buttonBack.Location = new System.Drawing.Point(200, 150);
+            this.buttonBack.BackColor = System.Drawing.Color.MediumPurple;
+            this.buttonBack.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.buttonBack.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.buttonBack.Location = new System.Drawing.Point(739, 411);
             this.buttonBack.Name = "buttonBack";
-            this.buttonBack.Size = new System.Drawing.Size(75, 23);
+            this.buttonBack.Size = new System.Drawing.Size(226, 64);
             this.buttonBack.TabIndex = 8;
             this.buttonBack.Text = "Powrót";
-            this.buttonBack.UseVisualStyleBackColor = true;
+            this.buttonBack.UseVisualStyleBackColor = false;
             this.buttonBack.Click += new System.EventHandler(this.buttonBack_Click);
             // 
             // textBoxRegisterInfo
             // 
-            this.textBoxRegisterInfo.Location = new System.Drawing.Point(100, 190);
+            this.textBoxRegisterInfo.Location = new System.Drawing.Point(659, 348);
             this.textBoxRegisterInfo.Name = "textBoxRegisterInfo";
             this.textBoxRegisterInfo.ReadOnly = true;
-            this.textBoxRegisterInfo.Size = new System.Drawing.Size(200, 20);
+            this.textBoxRegisterInfo.Size = new System.Drawing.Size(306, 20);
             this.textBoxRegisterInfo.TabIndex = 4;
             // 
             // labelEmail
             // 
             this.labelEmail.AutoSize = true;
-            this.labelEmail.Location = new System.Drawing.Point(30, 33);
+            this.labelEmail.BackColor = System.Drawing.Color.MediumPurple;
+            this.labelEmail.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelEmail.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.labelEmail.Location = new System.Drawing.Point(344, 50);
             this.labelEmail.Name = "labelEmail";
-            this.labelEmail.Size = new System.Drawing.Size(35, 13);
+            this.labelEmail.Size = new System.Drawing.Size(97, 33);
             this.labelEmail.TabIndex = 5;
             this.labelEmail.Text = "Email:";
+            this.labelEmail.Click += new System.EventHandler(this.labelEmail_Click);
             // 
             // labelPassword
             // 
             this.labelPassword.AutoSize = true;
-            this.labelPassword.Location = new System.Drawing.Point(30, 73);
+            this.labelPassword.BackColor = System.Drawing.Color.MediumPurple;
+            this.labelPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelPassword.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.labelPassword.Location = new System.Drawing.Point(344, 142);
             this.labelPassword.Name = "labelPassword";
-            this.labelPassword.Size = new System.Drawing.Size(36, 13);
+            this.labelPassword.Size = new System.Drawing.Size(98, 33);
             this.labelPassword.TabIndex = 6;
             this.labelPassword.Text = "Has³o:";
+            this.labelPassword.Click += new System.EventHandler(this.labelPassword_Click);
             // 
             // labelName
             // 
             this.labelName.AutoSize = true;
-            this.labelName.Location = new System.Drawing.Point(30, 113);
+            this.labelName.BackColor = System.Drawing.Color.MediumPurple;
+            this.labelName.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelName.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.labelName.Location = new System.Drawing.Point(344, 246);
             this.labelName.Name = "labelName";
-            this.labelName.Size = new System.Drawing.Size(29, 13);
+            this.labelName.Size = new System.Drawing.Size(79, 33);
             this.labelName.TabIndex = 7;
             this.labelName.Text = "Imiê:";
             // 
             // RegisterForm
             // 
-            this.ClientSize = new System.Drawing.Size(400, 250);
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1235, 605);
             this.Controls.Add(this.labelName);
             this.Controls.Add(this.labelPassword);
             this.Controls.Add(this.labelEmail);
@@ -165,8 +187,17 @@ namespace Aplikacja_desktopowa.View
             this.Name = "RegisterForm";
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
-        
+        private void labelEmail_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void labelPassword_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

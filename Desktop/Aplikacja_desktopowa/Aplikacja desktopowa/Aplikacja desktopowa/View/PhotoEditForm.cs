@@ -269,5 +269,19 @@ namespace Aplikacja_desktopowa.View
             catch { }
             return null;
         }
+
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PhotoEditForm));
+            this.SuspendLayout();
+            // 
+            // PhotoEditForm
+            // 
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1230, 610);
+            this.Name = "PhotoEditForm";
+            this.ResumeLayout(false);
+
+        }
     }
 }

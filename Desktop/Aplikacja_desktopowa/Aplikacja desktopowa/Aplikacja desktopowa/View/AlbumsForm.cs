@@ -86,5 +86,19 @@ namespace Aplikacja_desktopowa.View
                 }
             }
         }
+
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AlbumsForm));
+            this.SuspendLayout();
+            // 
+            // AlbumsForm
+            // 
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1228, 608);
+            this.Name = "AlbumsForm";
+            this.ResumeLayout(false);
+
+        }
     }
 }

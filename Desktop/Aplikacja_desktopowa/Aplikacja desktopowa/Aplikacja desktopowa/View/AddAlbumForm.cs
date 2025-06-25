@@ -42,5 +42,19 @@ namespace Aplikacja_desktopowa.View
             AcceptButton = buttonAdd;
             CancelButton = buttonCancel;
         }
+
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddAlbumForm));
+            this.SuspendLayout();
+            // 
+            // AddAlbumForm
+            // 
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1229, 609);
+            this.Name = "AddAlbumForm";
+            this.ResumeLayout(false);
+
+        }
     }
 }

@@ -96,5 +96,19 @@ namespace Aplikacja_desktopowa.View
         {
             Application.Exit();
         }
+
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UserForm));
+            this.SuspendLayout();
+            // 
+            // UserForm
+            // 
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1231, 606);
+            this.Name = "UserForm";
+            this.ResumeLayout(false);
+
+        }
     }
 }

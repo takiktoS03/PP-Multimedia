@@ -207,5 +207,19 @@ namespace Aplikacja_desktopowa.View
 
             DisplayPhotos(sorted);
         }
+
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AlbumPhotosForm));
+            this.SuspendLayout();
+            // 
+            // AlbumPhotosForm
+            // 
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1232, 611);
+            this.Name = "AlbumPhotosForm";
+            this.ResumeLayout(false);
+
+        }
     }
 }
