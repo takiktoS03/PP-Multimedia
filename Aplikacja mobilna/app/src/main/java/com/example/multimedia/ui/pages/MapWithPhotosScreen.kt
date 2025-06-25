@@ -33,24 +33,37 @@ fun MapWithPhotosScreen(
     var selectedPhoto by remember { mutableStateOf<Photo?>(null) }
 
     val photosWithLocation = photos.mapNotNull { photo ->
-        val loc = photo.location
-        val locParts = loc.split(",")
-        if (locParts.size == 2) {
-            // Spróbuj jako współrzędne
-            val lat = locParts[0].toDoubleOrNull()
-            val lng = locParts[1].toDoubleOrNull()
-            if (lat != null && lng != null) {
-                Pair(photo, LatLng(lat, lng))
-            } else {
-                // Jeśli to nie współrzędne, spróbuj geokodować tekst
-                val addresses = geocoder.getFromLocationName(loc, 1)
-                if (!addresses.isNullOrEmpty()) {
-                    val address = addresses[0]
-                    Pair(photo, LatLng(address.latitude, address.longitude))
-                } else null
+        val loc = photo.location.trim()
+
+        // Spróbuj bezpiecznie sparsować jako współrzędne
+        val latLngFromCoords = runCatching {
+            val parts = loc.split(",").map { it.trim() }
+            if (parts.size == 2) {
+                val lat = parts[0].toDoubleOrNull()
+                val lng = parts[1].toDoubleOrNull()
+                if (lat != null && lng != null) LatLng(lat, lng) else null
+            } else null
+        }.getOrNull()
+
+        if (latLngFromCoords != null) {
+            Pair(photo, latLngFromCoords)
+        } else {
+            // Jeśli to nie współrzędne — spróbuj geokodować lokalizację tekstową
+            val addresses = try {
+                geocoder.getFromLocationName(loc, 1)
+            } catch (e: Exception) {
+                null
             }
-        } else null
+
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0]
+                Pair(photo, LatLng(address.latitude, address.longitude))
+            } else {
+                null
+            }
+        }
     }
+
 
     val cameraPositionState = rememberCameraPositionState {
         if (photosWithLocation.isNotEmpty()) {
