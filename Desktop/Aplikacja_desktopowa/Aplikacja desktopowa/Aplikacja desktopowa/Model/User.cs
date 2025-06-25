@@ -27,5 +27,11 @@ namespace Aplikacja_desktopowa.Model
 
         [FirestoreProperty(Name = "user_id")]
         public string Id { get; set; }
+
+        [FirestoreProperty(Name = "isVerified")]
+        public bool IsVerified { get; set; }
+
+        [FirestoreProperty(Name = "verification_code")]
+        public string VerificationCode { get; set; }
     }
 }
