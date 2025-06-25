@@ -44,10 +44,15 @@ import java.io.BufferedInputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import android.graphics.BitmapFactory
+import com.example.multimedia.ui.gallery.components.PhotoItem
+import com.example.multimedia.ui.gallery.components.FullScreenImagePreview
 import coil.ImageLoader
 import coil.imageLoader
 import coil.request.ImageRequest
 import android.graphics.drawable.BitmapDrawable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import coil.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -317,7 +322,7 @@ fun GalleryScreen(
     val dateFormat = remember {
         java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
     }
-    val uploadedAtFormatted = expandedPhoto?.uploaded_at?.toDate()?.let { dateFormat.format(it) } ?: "Nieznana"
+    //val uploadedAtFormatted = expandedPhoto?.uploaded_at?.toDate()?.let { dateFormat.format(it) } ?: "Nieznana"
 
     if (expandedPhoto != null) {
         Box(
@@ -325,7 +330,7 @@ fun GalleryScreen(
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.95f))
                 .pointerInput(Unit) {
-                    detectTapGestures(onTap = { expandedPhoto = null }) // zamknij po kliknięciu
+                    detectTapGestures(onTap = { expandedPhoto = null })
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -335,31 +340,14 @@ fun GalleryScreen(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(expandedPhoto!!.file_path),
-                    contentDescription = "Pełnoekranowy podgląd",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
 
-                // Metadane
-                Text(text = "Tytuł: ${expandedPhoto!!.title}", color = Color.White)
-                Text(text = "Opis: ${expandedPhoto!!.description}", color = Color.White)
-                Text(text = "Lokalizacja: ${expandedPhoto!!.location}", color = Color.White)
-                Text(text = "Tagi: ${expandedPhoto!!.tags.joinToString(", ")}", color = Color.White)
-                Text(text = "Przesłano: $uploadedAtFormatted", color = Color.White)
+                FullScreenImagePreview(filePath = expandedPhoto!!.file_path, photo = expandedPhoto!!)
 
-                // Te dwie wymagają pobrania z sieci – robimy to niżej
                 val context = LocalContext.current
                 var fileSize by remember { mutableStateOf("") }
                 var resolution by remember { mutableStateOf("") }
 
                 val imageLoader = coil.ImageLoader(context)
-
-                //val imageLoader = coil.imageLoader(context) // użyj domyślnego globalnego loadera
 
                 LaunchedEffect(expandedPhoto?.file_path) {
                     fileSize = "Nieznany"
@@ -368,7 +356,6 @@ fun GalleryScreen(
                     try {
                         val url = URL(expandedPhoto!!.file_path)
 
-                        // 1. Pobierz tylko nagłówek z rozmiarem pliku
                         val headConnection = (url.openConnection() as HttpURLConnection).apply {
                             requestMethod = "HEAD"
                             connectTimeout = 5000
@@ -386,7 +373,6 @@ fun GalleryScreen(
                         }
                         headConnection.disconnect()
 
-                        // 2. Pobierz tylko nagłówki obrazu, by uzyskać rozdzielczość
                         val getConnection = (url.openConnection() as HttpURLConnection).apply {
                             doInput = true
                             connectTimeout = 5000
@@ -410,153 +396,14 @@ fun GalleryScreen(
                     }
                 }
 
-                if (fileSize.isNotEmpty()) {
-                    Text(text = "Rozmiar: $fileSize", color = Color.White)
-                }
-                if (resolution.isNotEmpty()) {
-                    Text(text = "Rozdzielczość: $resolution", color = Color.White)
-                }
+//                if (fileSize.isNotEmpty()) {
+//                    Text(text = "Rozmiar: $fileSize", color = Color.White)
+//                }
+//                if (resolution.isNotEmpty()) {
+//                    Text(text = "Rozdzielczość: $resolution", color = Color.White)
+//                }
             }
         }
     }
 }
 
-@Composable
-fun FullScreenImagePreview(filePath: String) {
-    val context = LocalContext.current
-
-    var resolution by remember(filePath) { mutableStateOf("Nieznana") }
-    var fileSize by remember(filePath) { mutableStateOf("Nieznana") }
-    var imageLoaded by remember(filePath) { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(400.dp)
-            .background(Color.Black),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(filePath)
-                .allowHardware(false)
-                .crossfade(true)
-                .build(),
-            contentDescription = "Podgląd zdjęcia",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            onSuccess = { success ->
-                val drawable = success.result.drawable
-                val (width, height) = if (drawable is BitmapDrawable) {
-                    drawable.bitmap.width to drawable.bitmap.height
-                } else {
-                    drawable.intrinsicWidth to drawable.intrinsicHeight
-                }
-                resolution = "${width} x ${height}"
-                imageLoaded = true
-            },
-            onError = {
-                resolution = "Nieznana"
-                fileSize = "Nieznany"
-                imageLoaded = false
-            }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text("Rozdzielczość: $resolution", color = Color.White)
-        Text("Rozmiar pliku: $fileSize", color = Color.White)
-    }
-
-    LaunchedEffect(filePath, imageLoaded) {
-        if (imageLoaded) {
-            try {
-                val contentLength = withContext(Dispatchers.IO) {
-                    var connection: HttpURLConnection? = null
-                    try {
-                        connection = (URL(filePath).openConnection() as HttpURLConnection).apply {
-                            requestMethod = "HEAD"
-                            connect()
-                        }
-                        connection.contentLengthLong
-                    } finally {
-                        connection?.disconnect()
-                    }
-                }
-
-                fileSize = if (contentLength >= 0) {
-                    when {
-                        contentLength < 1024 -> "$contentLength B"
-                        contentLength < 1024 * 1024 -> "${contentLength / 1024} KB"
-                        else -> String.format("%.2f MB", contentLength / (1024.0 * 1024.0))
-                    }
-                } else {
-                    "Nieznany"
-                }
-            } catch (e: Exception) {
-                fileSize = "Nieznany"
-            }
-        }
-    }
-}
-
-@Composable
-fun PhotoItem(
-    photo: Photo,
-    isSelected: Boolean,
-    selectionMode: Boolean,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
-    onPreview: (Photo) -> Unit
-)
- {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .then(
-                if (isSelected) Modifier.border(2.dp, Color.Red)
-                else Modifier
-            )
-            .pointerInput(isSelected) {
-                detectTapGestures(
-                    onLongPress = { onLongClick() },
-                    onTap = {
-                        if (selectionMode) {
-                            onClick()  // zaznacz/odznacz
-                        } else {
-                            onPreview(photo)  // podgląd
-                        }
-                    }
-                )
-            }
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-//            Image(
-//                painter = rememberAsyncImagePainter(photo.file_path),
-//                contentDescription = "Zdjęcie",
-//                contentScale = ContentScale.Crop,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//            )
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = photo.file_path
-                ),
-                contentDescription = "Miniaturka",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f) // kwadrat
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = photo.title, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = photo.description, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}

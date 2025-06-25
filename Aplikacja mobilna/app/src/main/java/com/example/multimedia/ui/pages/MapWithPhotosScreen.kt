@@ -28,14 +28,12 @@ fun MapWithPhotosScreen(
     val photos by viewModel.photos.observeAsState(emptyList())
     val context = LocalContext.current
 
-    // Używaj geokodera do zamiany "miasto, kraj" -> współrzędne
     val geocoder = remember { Geocoder(context, Locale.getDefault()) }
     var selectedPhoto by remember { mutableStateOf<Photo?>(null) }
 
     val photosWithLocation = photos.mapNotNull { photo ->
         val loc = photo.location.trim()
 
-        // Spróbuj bezpiecznie sparsować jako współrzędne
         val latLngFromCoords = runCatching {
             val parts = loc.split(",").map { it.trim() }
             if (parts.size == 2) {
@@ -48,7 +46,6 @@ fun MapWithPhotosScreen(
         if (latLngFromCoords != null) {
             Pair(photo, latLngFromCoords)
         } else {
-            // Jeśli to nie współrzędne — spróbuj geokodować lokalizację tekstową
             val addresses = try {
                 geocoder.getFromLocationName(loc, 1)
             } catch (e: Exception) {
@@ -96,13 +93,12 @@ fun MapWithPhotosScreen(
                     Marker(
                         state = MarkerState(position = latLng),
                         title = photo.title,
-                        snippet = photo.description,
+                        snippet = photo.location,
                         onClick = {
                             selectedPhoto = photo
-                            false // pozwala pokazać domyślny InfoWindow też
+                            false
                         }
                     )
-
                 }
             }
         }
@@ -128,6 +124,5 @@ fun MapWithPhotosScreen(
                 }
             )
         }
-
     }
 }
