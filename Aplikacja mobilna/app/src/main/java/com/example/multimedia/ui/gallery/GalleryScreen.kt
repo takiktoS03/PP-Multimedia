@@ -1,6 +1,5 @@
 package com.example.multimedia.ui.gallery
 
-// import androidx.compose.ui.draw.background      // ← 🔥 TO BYŁO BRAKUJĄCE!
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -67,14 +66,12 @@ import java.net.URL
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GalleryScreen(
-    //photosLiveData: LiveData<List<Photo>>,
-    //albumId: String? = null,
     viewModel: GalleryViewModel = hiltViewModel(),
     navController: NavController,
-    //onAddToAlbum: (List<Photo>) -> Unit = {}
 ) {
     val photos by viewModel.photos.observeAsState(emptyList())
-    //val photos by viewModel.photos.observeAsState(emptyList())
+    val availableTags by viewModel.availableTags.observeAsState(emptyList())
+    val selectedTags = remember { mutableStateListOf<String>() }
     val showDialog        by remember { derivedStateOf { viewModel.isEditDialogVisible } }
     val editingPhoto      by remember { derivedStateOf { viewModel.photoBeingEdited } }
 
@@ -220,13 +217,24 @@ fun GalleryScreen(
     if (showFilterSheet) {
         ModalBottomSheet(onDismissRequest = { showFilterSheet = false }) {
             FilterContent(
+                availableTags = availableTags,
+                selectedTags = selectedTags,
+                onTagToggle = { tag ->
+                    if (selectedTags.contains(tag)) selectedTags.remove(tag)
+                    else selectedTags.add(tag)
+                },
                 onApply = { selectedSort, selectedTags ->
                     viewModel.applyFilters(selectedSort, selectedTags)
                     showFilterSheet = false
+                },
+                onClear = {
+                    selectedTags.clear()
+                    viewModel.applyFilters(null, emptyList())
                 }
             )
         }
     }
+
 
     DrawerScaffold(
         navController = navController,

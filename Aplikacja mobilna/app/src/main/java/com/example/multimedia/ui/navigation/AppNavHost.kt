@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,7 +48,6 @@ import com.example.multimedia.ui.album.AlbumListScreen
 import com.example.multimedia.ui.album.AlbumViewModel
 import com.example.multimedia.ui.album.CreateAlbumScreen
 import com.example.multimedia.ui.gallery.GalleryScreen
-import com.example.multimedia.ui.gallery.GalleryViewModel
 import com.example.multimedia.ui.gallery.LocationPickerScreen
 import com.example.multimedia.ui.gallery.MapWithPhotosScreen
 import com.example.multimedia.ui.home.HomeViewModel
@@ -181,11 +179,8 @@ fun AppNavHost(
                 }
 
                 composable("gallery") {
-                    val vm: GalleryViewModel = hiltViewModel()
                     GalleryScreen(
-                        //photosLiveData = vm.photos,
-                        navController  = navController,
-                        //albumId = null
+                        navController  = navController
                         )
                 }
 
@@ -236,15 +231,8 @@ fun AppNavHost(
                         type = NavType.StringType
                         nullable = true
                         defaultValue = null
-                })) { backStack ->
-                    //val albumId = backStack.arguments!!.getString("albumId")!!
-                    val vm: GalleryViewModel = hiltViewModel()
-                    //vm.selectAlbum(albumId)
-
-                    GalleryScreen(
-                        //photosLiveData = vm.photos,
-                        navController  = navController,
-                        //albumId = albumId
+                })) {   GalleryScreen(
+                        navController  = navController
                     )
                 }
                 composable("other_media") {

@@ -19,34 +19,7 @@ class AlbumViewModel @Inject constructor(
 
     val albums: LiveData<List<Album>> = albumRepo.getAlbumsForUser()
 
-    // ID aktualnie wybranego albumu
     private val _currentAlbumId = MutableLiveData<String?>(null)
-    val currentAlbumId: LiveData<String?> = _currentAlbumId
-
-//    val currentAlbumPhotos: LiveData<List<Photo>>
-//
-//    init {
-//        // 1) LiveData ze zmieniającą się listą photoIds:
-//        val photoIds = MediatorLiveData<List<String>>().apply {
-//            fun switch(id: String?) {
-//                sources.forEach { removeSource((it as LiveData<*>)) }
-//                if (id == null) value = emptyList()
-//                else addSource(albumRepo.getPhotoIdsForAlbum(id)) { value = it }
-//            }
-//            // gdy albumId się zmieni, przerejestruj źródło:
-//            addSource(_currentAlbumId) { switch(it) }
-//        }
-//
-//        // 2) LiveData przetwarzająca te photoIds → pełne Photo:
-//        currentAlbumPhotos = MediatorLiveData<List<Photo>>().apply {
-//            addSource(photoIds) { ids ->
-//                // gdy zmienią się id, podłączemy źródło photoRepo.getPhotosByIds(ids)
-//                sources.forEach { removeSource((it as LiveData<*>)) }
-//                if (ids.isEmpty()) value = emptyList()
-//                else addSource(photoRepo.getPhotosByIds(ids)) { value = it }
-//            }
-//        }
-//    }
 
     fun selectAlbum(albumId: String) {
         _currentAlbumId.value = albumId

@@ -14,8 +14,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AlbumRepository @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val photoRepository: PhotoRepository
+    private val firestore: FirebaseFirestore
 ) {
     private val userId get() = FirebaseAuth.getInstance().currentUser?.uid
 
@@ -35,8 +34,6 @@ class AlbumRepository @Inject constructor(
 
     fun getPhotosInAlbum(albumId: String): LiveData<List<Photo>> {
         val result = MutableLiveData<List<Photo>>()
-
-        // krok 1: pobierz powiązania album–photo
         firestore.collection("album_photos")
             .whereEqualTo("album_id", albumId)
             .addSnapshotListener { snap, _ ->
@@ -49,8 +46,6 @@ class AlbumRepository @Inject constructor(
                     result.value = emptyList()
                     return@addSnapshotListener
                 }
-
-                // krok 2: pobierz obiekty Photo o tych ID
                 firestore.collection("photos")
                     .whereIn(FieldPath.documentId(), ids)
                     .addSnapshotListener { photoSnap, _ ->
@@ -84,7 +79,6 @@ class AlbumRepository @Inject constructor(
 
     /** Usuń cały album wraz ze zdjęciami i powiązaniami w album_photos */
     fun deleteAlbum(albumId: String, onComplete: () -> Unit, onError: (Exception) -> Unit) {
-        // krok 1: pobierz wszystkie dokumenty album_photos dla tego albumu
         firestore.collection("album_photos")
             .whereEqualTo("album_id", albumId)
             .get()

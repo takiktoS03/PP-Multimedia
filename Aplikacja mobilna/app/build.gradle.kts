@@ -76,6 +76,8 @@ dependencies {
     implementation(libs.androidx.exifinterface)
     implementation(libs.firebase.functions.ktx)
     implementation(libs.google.firebase.functions.ktx)
+    implementation(libs.accompanist.flowlayout)
+
 
     implementation(libs.firebase.functions.ktx.v2040)
     implementation(libs.google.firebase.auth.ktx)

@@ -60,7 +60,7 @@ class PhotoRepository @Inject constructor(
 
     fun getPhotos(currentUserId: String?, albumId: String?): LiveData<List<Photo>> =
         if (albumId.isNullOrEmpty()) {
-            // --- zwykła galeria: publiczne + moje prywatne ---
+            // zwykła galeria: publiczne + moje prywatne
             MutableLiveData<List<Photo>>().also { live ->
                 firestore.collection("photos")
                     .addSnapshotListener { snap, _ ->
@@ -71,7 +71,7 @@ class PhotoRepository @Inject constructor(
                     }
             }
         } else {
-            // --- podgaleria: najpierw pobierz powiązania album_photos → listę photoId
+            // podgaleria: najpierw pobierz powiązania album_photos → listę photoId
             val idsLive = MutableLiveData<List<String>>()
             firestore.collection("album_photos")
                 .whereEqualTo("album_id", albumId)
@@ -79,7 +79,7 @@ class PhotoRepository @Inject constructor(
                     idsLive.value = snap?.documents?.mapNotNull { it.getString("photo_id") } ?: emptyList()
                 }
 
-            // --- potem, gdy zmieni się lista id, pobierz dokumenty photos ---
+            // otem, gdy zmieni się lista id, pobierz dokumenty photos
             MediatorLiveData<List<Photo>>().also { photosLive ->
                 photosLive.addSource(idsLive) { ids ->
                     if (ids.isEmpty()) {
