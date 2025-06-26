@@ -9,5 +9,11 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         FirebaseApp.initializeApp(this)
+
+        // Debug‐provider do developmentu:
+//        FirebaseAppCheck.getInstance()
+//            .installAppCheckProviderFactory(
+//                DebugAppCheckProviderFactory.getInstance()
+//            )
     }
 }

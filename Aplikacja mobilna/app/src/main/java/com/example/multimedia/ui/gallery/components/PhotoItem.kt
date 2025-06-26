@@ -46,14 +46,6 @@ fun PhotoItem(
             }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-//            Image(
-//                painter = rememberAsyncImagePainter(photo.file_path),
-//                contentDescription = "Zdjęcie",
-//                contentScale = ContentScale.Crop,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//            )
             Image(
                 painter = rememberAsyncImagePainter(
                     model = photo.file_path

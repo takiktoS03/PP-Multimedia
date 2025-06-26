@@ -2,38 +2,55 @@ package com.example.multimedia.ui.gallery
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.multimedia.data.model.Photo
 import com.example.multimedia.data.repository.PhotoRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import javax.inject.Inject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
-    private val repository: PhotoRepository) : ViewModel() {
+    private val repository: PhotoRepository,
+    private val savedStateHandle: SavedStateHandle,
+    private val auth: FirebaseAuth) : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
         value = "This is gallery Fragment"
     }
     val text: LiveData<String> = _text
 
-    val rawPhotos: LiveData<List<Photo>>
+    private val albumId: String? = savedStateHandle.get<String>("albumId")
+    private val currentUserId: String? get() = auth.currentUser?.uid
+
+    val photos: LiveData<List<Photo>> =
+        repository.getPhotos(currentUserId, albumId)
+
     private val _filters = MutableLiveData<Pair<String?, List<String>>>(null to emptyList())
     val filters: LiveData<Pair<String?, List<String>>> = _filters
+
+    private val _currentAlbumId = MutableLiveData<String?>(null)
+
+//    private val albumPhotoIds: LiveData<List<String>> = _currentAlbumId.switchMap { albumId ->
+//        if (albumId.isNullOrEmpty()) MutableLiveData(emptyList())
+//        else albumRepo.getPhotoIdsForAlbum(albumId)
+//    }
+
+//    private val albumPhotos: LiveData<List<Photo>> = albumPhotoIds.switchMap { ids ->
+//        repository.getPhotosByIds(ids)
+//    }
 
     var isEditDialogVisible by mutableStateOf(false)
         private set
@@ -42,34 +59,40 @@ class GalleryViewModel @Inject constructor(
     var selectedPhotos by mutableStateOf<List<Photo>>(emptyList())
         private set
 
-    init {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-        rawPhotos = repository.getPhotos(currentUserId)
+//    val photos: LiveData<List<Photo>> = MediatorLiveData<List<Photo>>().apply {
+//        var rawList   = emptyList<Photo>()
+//        var albumList = emptyList<Photo>()
+//
+//        fun update() {
+//            val source = if (albumId.isNullOrEmpty()) rawList else albumList
+//            val (sort, tags) = _filters.value ?: (null to emptyList())
+//            var filtered = if (tags.isNotEmpty())
+//                source.filter { it.tags.any { t -> t in tags } }
+//            else source
+//
+//            filtered = when (sort) {
+//                "Tytuł A-Z"     -> filtered.sortedBy     { it.title.lowercase() }
+//                "Tytuł Z-A"     -> filtered.sortedByDescending { it.title.lowercase() }
+//                "Data rosnąco"  -> filtered.sortedBy     { it.uploaded_at }
+//                "Data malejąco" -> filtered.sortedByDescending { it.uploaded_at }
+//                else            -> filtered
+//            }
+//
+//            value = filtered
+//        }
+//        // Obserwacja różnych źródeł jednocześnie
+//        addSource(rawPhotos)   { rawList   = it; update() }
+//        addSource(albumPhotos) { albumList = it; update() }
+//        addSource(_filters)    { update() }
+//        //addSource(_currentAlbumId) { update() }
+//    }
+
+    fun selectAlbum(albumId: String?) {
+        _currentAlbumId.value = albumId
     }
 
-    val photos: LiveData<List<Photo>> = MediatorLiveData<List<Photo>>().apply {
-        fun update() {
-            val list = rawPhotos.value   ?: emptyList()
-            val (sort, tags) = _filters.value ?: (null to emptyList())
-
-            var filtered = if (tags.isNotEmpty()) {
-                list.filter { it.tags.any { tag -> tag in tags } }
-            } else list
-
-            filtered = when (sort) {
-                "Tytuł A-Z"     -> filtered.sortedBy     { it.title.lowercase() }
-                "Tytuł Z-A"     -> filtered.sortedByDescending { it.title.lowercase() }
-                "Data rosnąco"  -> filtered.sortedBy     { it.uploaded_at }
-                "Data malejąco" -> filtered.sortedByDescending { it.uploaded_at }
-                else            -> filtered
-            }
-
-            value = filtered
-        }
-
-        // obserwuj oba źródła
-        addSource(rawPhotos ) { update() }
-        addSource(_filters   ) { update() }
+    fun applyFilters(sort: String?, tags: List<String>) {
+        _filters.value = sort to tags
     }
 
     fun uploadPhoto(
@@ -81,21 +104,19 @@ class GalleryViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-        val finalLocation = location.ifBlank { "Nieznana lokalizacja" }.take(200) // ⬅ ZMIANA
+        //val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
         val meta = Photo(
             title       = title,
             description = description,
-            location    = finalLocation, // ⬅ ZMIANA
+            location    = location,
             tags        = tags,
             file_path   = "",
             uploaded_at = Timestamp.now(),
             user_id     = currentUserId
         )
-        Log.d("uploadPhoto", "Uploading photo with location = '$location'")
 
-        repository.uploadPhoto(uri, meta, onSuccess, onFailure)
+        repository.uploadPhoto(uri, meta, albumId, onSuccess, onFailure)
     }
 
     fun deletePhoto(photo: Photo) {
@@ -107,10 +128,6 @@ class GalleryViewModel @Inject constructor(
 
     fun updatePhoto(photo: Photo) {
         repository.updatePhoto(photo)
-    }
-
-    fun applyFilters(sort: String?, tags: List<String>) {
-        _filters.value = sort to tags
     }
 
     fun showEditDialog(photos: List<Photo>) {

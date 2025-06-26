@@ -1,15 +1,21 @@
 package com.example.multimedia.ui.gallery
 
+// import androidx.compose.ui.draw.background      // ← 🔥 TO BYŁO BRAKUJĄCE!
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -17,25 +23,38 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-// import androidx.compose.ui.draw.background      // ← 🔥 TO BYŁO BRAKUJĄCE!
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
-import com.example.multimedia.R
 import com.example.multimedia.data.model.Photo
+import com.example.multimedia.ui.gallery.components.FullScreenImagePreview
+import com.example.multimedia.ui.gallery.components.PhotoItem
 import com.example.multimedia.ui.sideBar.DrawerScaffold
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
@@ -43,28 +62,19 @@ import kotlinx.coroutines.launch
 import java.io.BufferedInputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import android.graphics.BitmapFactory
-import com.example.multimedia.ui.gallery.components.PhotoItem
-import com.example.multimedia.ui.gallery.components.FullScreenImagePreview
-import coil.ImageLoader
-import coil.imageLoader
-import coil.request.ImageRequest
-import android.graphics.drawable.BitmapDrawable
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import coil.compose.AsyncImage
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GalleryScreen(
+    //photosLiveData: LiveData<List<Photo>>,
+    //albumId: String? = null,
     viewModel: GalleryViewModel = hiltViewModel(),
-    navController: NavController
+    navController: NavController,
+    //onAddToAlbum: (List<Photo>) -> Unit = {}
 ) {
     val photos by viewModel.photos.observeAsState(emptyList())
+    //val photos by viewModel.photos.observeAsState(emptyList())
     val showDialog        by remember { derivedStateOf { viewModel.isEditDialogVisible } }
     val editingPhoto      by remember { derivedStateOf { viewModel.photoBeingEdited } }
 
@@ -157,6 +167,7 @@ fun GalleryScreen(
                                 description = desc,
                                 location = locationToUse,
                                 tags = safeTags,
+                                //albumId     = albumId,
                                 onSuccess = { success.complete(true) },
                                 onFailure = { ex ->
                                     Log.e("GalleryScreen", "Upload failed for $uri: ${ex.message}", ex)
@@ -176,7 +187,6 @@ fun GalleryScreen(
                         selectedImageUris.clear()
                         viewModel.clearPendingImageUris()
                         viewModel.dismissDialog()
-                        Log.d("GalleryScreen","dismiss called")
                     }
                 }
             }
@@ -218,12 +228,10 @@ fun GalleryScreen(
         }
     }
 
-    val dynamicTitle = if (selectionMode) "${selectedPhotoIds.size} zaznaczone" else "Galeria"
-
     DrawerScaffold(
         navController = navController,
         currentRoute = "gallery",
-        title = dynamicTitle,
+        title = if (selectionMode) "${selectedPhotoIds.size} zaznaczone" else "Galeria",
         snackbarHostState = snackbarHostState,
         actions = {
             if (selectionMode) {
