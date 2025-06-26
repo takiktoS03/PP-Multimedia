@@ -5,6 +5,7 @@ import com.example.multimedia.data.model.MediaType
 import com.example.multimedia.data.model.OtherMedia
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
@@ -51,5 +52,30 @@ class OtherMediaRepository(
             .toObjects(OtherMedia::class.java)
 
         return videos + audios
+    }
+
+    suspend fun updateMedia(id: String, newTitle: String, newDesc: String, type: MediaType) {
+        val folder = if (type == MediaType.VIDEO) "videos" else "audio"
+        firestore.collection(folder)
+            .document(id)
+            .update(
+                mapOf(
+                    "title" to newTitle,
+                    "description" to newDesc
+                )
+            ).await()
+    }
+
+    suspend fun deleteMedia(id: String, type: MediaType) {
+        val folder = if (type == MediaType.VIDEO) "videos" else "audio"
+
+        // usuń z Firestore
+        firestore.collection(folder)
+            .document(id)
+            .delete()
+            .await()
+
+        // usuń z Firebase Storage
+        storage.reference.child("$folder/$id").delete().await()
     }
 }

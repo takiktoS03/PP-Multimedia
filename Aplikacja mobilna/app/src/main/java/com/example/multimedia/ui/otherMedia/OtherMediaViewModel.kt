@@ -32,4 +32,19 @@ class OtherMediaViewModel @Inject constructor(
             _mediaList.value = repository.getUserMedia()
         }
     }
+
+    fun updateMedia(id: String, newTitle: String, newDescription: String, type: MediaType) {
+        viewModelScope.launch {
+            repository.updateMedia(id, newTitle, newDescription, type)
+            _mediaList.value = repository.getUserMedia()
+        }
+    }
+
+    fun deleteMedia(id: String, type: MediaType) {
+        viewModelScope.launch {
+            repository.deleteMedia(id, type)
+            _mediaList.value = repository.getUserMedia()
+        }
+    }
+
 }

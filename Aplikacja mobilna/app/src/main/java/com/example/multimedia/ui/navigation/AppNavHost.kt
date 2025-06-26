@@ -344,7 +344,7 @@ fun HomeWithDrawer(
                         selected = currentRoute == "other_media",
                         icon = {
                             Icon(
-                                painterResource(id = R.drawable.baseline_videocam_24),
+                                painterResource(id = R.drawable.baseline_video_library_24),
                                 null
                             )
                         },
