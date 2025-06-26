@@ -1,5 +1,6 @@
 package com.example.multimedia.di
 
+import com.example.multimedia.data.repository.OtherMediaRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -29,4 +30,15 @@ object FirebaseModule {
     fun provideFirestore(): FirebaseFirestore {
         return FirebaseFirestore.getInstance("image-db")
     }
+
+    @Provides
+    @Singleton
+    fun provideOtherMediaRepository(
+        firestore: FirebaseFirestore,
+        storage: FirebaseStorage,
+        auth: FirebaseAuth
+    ): OtherMediaRepository {
+        return OtherMediaRepository(firestore, storage, auth)
+    }
+
 }

@@ -95,6 +95,7 @@ fun DrawerScaffold(
                         scope.launch { drawerState.close() }
                     }
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Konto") },
                     selected = currentRoute == "account",
@@ -107,6 +108,20 @@ fun DrawerScaffold(
                         scope.launch { drawerState.close() }
                     }
                 )
+
+                NavigationDrawerItem(
+                    label = { Text("Inne media") },
+                    selected = currentRoute == "other_media",
+                    icon = { Icon(painterResource(id = R.drawable.baseline_videocam_24), null) },
+                    onClick = {
+                        navController.navigate("other_media") {
+                            launchSingleTop = true
+                            popUpTo("home") { inclusive = false }
+                        }
+                        scope.launch { drawerState.close() }
+                    }
+                )
+
             }
         }
     ) {

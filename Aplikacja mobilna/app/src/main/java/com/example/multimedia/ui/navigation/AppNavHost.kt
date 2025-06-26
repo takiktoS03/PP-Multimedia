@@ -1,6 +1,7 @@
 package com.example.multimedia.ui.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,6 +54,7 @@ import com.example.multimedia.ui.gallery.LocationPickerScreen
 import com.example.multimedia.ui.gallery.MapWithPhotosScreen
 import com.example.multimedia.ui.home.HomeViewModel
 import com.example.multimedia.ui.login.LoginViewModel
+import com.example.multimedia.ui.otherMedia.OtherMediaScreen
 import com.example.multimedia.ui.pages.AccountScreen
 import com.example.multimedia.ui.pages.HomeScreen
 import com.example.multimedia.ui.pages.LoginScreen
@@ -105,6 +108,7 @@ fun AppNavHost(
             CircularProgressIndicator()
         }
     } else {
+
         key(isVerified) {
             NavHost(
                 navController = navController,
@@ -243,7 +247,9 @@ fun AppNavHost(
                         //albumId = albumId
                     )
                 }
-
+                composable("other_media") {
+                    OtherMediaScreenWithDrawer(navController)
+                }
             }
         }
     }
@@ -282,67 +288,90 @@ fun HomeWithDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text("Menu", modifier = Modifier.padding(16.dp))
-                NavigationDrawerItem(
-                    label = { Text("Home") },
-                    selected = currentRoute == "home",
-                    icon = { Icon(Icons.Default.Home, null) },
-                    onClick = {
-                        navController.navigate("home") {
-                            launchSingleTop = true
-                            popUpTo("home") { inclusive = true }
+                androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxSize()) {
+                    Text("Menu", modifier = Modifier.padding(16.dp))
+                    NavigationDrawerItem(
+                        label = { Text("Home") },
+                        selected = currentRoute == "home",
+                        icon = { Icon(Icons.Default.Home, null) },
+                        onClick = {
+                            navController.navigate("home") {
+                                launchSingleTop = true
+                                popUpTo("home") { inclusive = true }
+                            }
+                            scope.launch { drawerState.close() }
                         }
-                        scope.launch { drawerState.close() }
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Albums") },
-                    selected = currentRoute == "albums",
-                    icon = { Icon(painterResource(id = R.drawable.baseline_map_24), null) },
-                    onClick = {
-                        navController.navigate("albums") {
-                            launchSingleTop = true
-                            popUpTo("home") { inclusive = false }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Albums") },
+                        selected = currentRoute == "albums",
+                        icon = { Icon(painterResource(id = R.drawable.baseline_map_24), null) },
+                        onClick = {
+                            navController.navigate("albums") {
+                                launchSingleTop = true
+                                popUpTo("home") { inclusive = false }
+                            }
+                            scope.launch { drawerState.close() }
                         }
-                        scope.launch { drawerState.close() }
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Gallery") },
-                    selected = currentRoute == "gallery",
-                    icon = { Icon(painterResource(id = R.drawable.ic_menu_gallery), null) },
-                    onClick = {
-                        navController.navigate("gallery") {
-                            launchSingleTop = true
-                            popUpTo("home") { inclusive = false }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Gallery") },
+                        selected = currentRoute == "gallery",
+                        icon = { Icon(painterResource(id = R.drawable.ic_menu_gallery), null) },
+                        onClick = {
+                            navController.navigate("gallery") {
+                                launchSingleTop = true
+                                popUpTo("home") { inclusive = false }
+                            }
+                            scope.launch { drawerState.close() }
                         }
-                        scope.launch { drawerState.close() }
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Maps of Photos") },
-                    selected = currentRoute == "map_with_photos",
-                    icon = { Icon(painterResource(id = R.drawable.baseline_map_24), null) },
-                    onClick = {
-                        navController.navigate("map_with_photos") {
-                            launchSingleTop = true
-                            popUpTo("home") { inclusive = false }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Maps of Photos") },
+                        selected = currentRoute == "map_with_photos",
+                        icon = { Icon(painterResource(id = R.drawable.baseline_map_24), null) },
+                        onClick = {
+                            navController.navigate("map_with_photos") {
+                                launchSingleTop = true
+                                popUpTo("home") { inclusive = false }
+                            }
+                            scope.launch { drawerState.close() }
                         }
-                        scope.launch { drawerState.close() }
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Konto") },
-                    selected = currentRoute == "account",
-                    icon = { Icon(Icons.Default.Person, null) },
-                    onClick = {
-                        navController.navigate("account") {
-                            launchSingleTop = true
-                            popUpTo("home") { inclusive = false }
+                    )
+
+                    NavigationDrawerItem(
+                        label = { Text("Inne media") },
+                        selected = currentRoute == "other_media",
+                        icon = {
+                            Icon(
+                                painterResource(id = R.drawable.baseline_videocam_24),
+                                null
+                            )
+                        },
+                        onClick = {
+                            navController.navigate("other_media") {
+                                launchSingleTop = true
+                                popUpTo("home") { inclusive = false }
+                            }
+                            scope.launch { drawerState.close() }
                         }
-                        scope.launch { drawerState.close() }
-                    }
-                )
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    NavigationDrawerItem(
+                        label = { Text("Konto") },
+                        selected = currentRoute == "account",
+                        icon = { Icon(Icons.Default.Person, null) },
+                        onClick = {
+                            navController.navigate("account") {
+                                launchSingleTop = true
+                                popUpTo("home") { inclusive = false }
+                            }
+                            scope.launch { drawerState.close() }
+                        }
+                    )
+                }
             }
         }
     ) {
@@ -364,3 +393,20 @@ fun HomeWithDrawer(
         }
     }
 }
+@Composable
+private fun OtherMediaScreenWithDrawer(navController: NavHostController) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    HomeWithDrawer(
+        navController = navController,
+        drawerState = drawerState,
+        scope = scope,
+        currentRoute = currentRoute
+    ) {
+        OtherMediaScreen()
+    }
+}
+

@@ -100,6 +100,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.google.firebase.storage.ktx)
     implementation(libs.firebase.appcheck.debug)
+    implementation(libs.androidx.ui.viewbinding)
     kapt(libs.hilt.compiler)
 
     // Image
