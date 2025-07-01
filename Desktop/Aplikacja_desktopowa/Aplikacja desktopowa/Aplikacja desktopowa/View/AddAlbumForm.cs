@@ -3,9 +3,19 @@ using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View
 {
+    /// <summary>
+    /// Formularz do dodawania nowego albumu.
+    /// </summary>
     public class AddAlbumForm : Form
     {
+        /// <summary>
+        /// Zwraca nazwê albumu wprowadzon¹ przez u¿ytkownika.
+        /// </summary>
         public string AlbumName => textBoxName.Text.Trim();
+
+        /// <summary>
+        /// Zwraca opis albumu wprowadzony przez u¿ytkownika.
+        /// </summary>
         public string AlbumDescription => textBoxDescription.Text.Trim();
 
         private TextBox textBoxName;
@@ -13,6 +23,9 @@ namespace Aplikacja_desktopowa.View
         private Button buttonAdd;
         private Button buttonCancel;
 
+        /// <summary>
+        /// Inicjalizuje formularz dodawania albumu.
+        /// </summary>
         public AddAlbumForm()
         {
             Text = "Dodaj nowy album";
@@ -54,7 +67,6 @@ namespace Aplikacja_desktopowa.View
             this.ClientSize = new System.Drawing.Size(1229, 609);
             this.Name = "AddAlbumForm";
             this.ResumeLayout(false);
-
         }
     }
 }

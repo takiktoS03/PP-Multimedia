@@ -6,15 +6,25 @@ using System.Threading.Tasks;
 
 namespace Aplikacja_desktopowa.Service
 {
+    /// <summary>
+    /// Serwis do zarz¹dzania albumami u¿ytkowników oraz ich powi¹zaniami ze zdjêciami w Firestore.
+    /// </summary>
     public class AlbumService
     {
         private readonly FirestoreDb _firestore;
 
+        /// <summary>
+        /// Inicjalizuje now¹ instancjê <see cref="AlbumService"/> i ³¹czy siê z baz¹ Firestore.
+        /// </summary>
         public AlbumService()
         {
             _firestore = FirebaseConfig.GetFirestoreDb();
         }
 
+        /// <summary>
+        /// Pobiera wszystkie albumy z kolekcji "albums".
+        /// </summary>
+        /// <returns>Lista krotek zawieraj¹cych ID dokumentu i dane albumu.</returns>
         public async Task<List<(string Id, Album Album)>> GetAllAlbumsAsync()
         {
             var albums = new List<(string, Album)>();
@@ -27,6 +37,11 @@ namespace Aplikacja_desktopowa.Service
             return albums;
         }
 
+        /// <summary>
+        /// Pobiera wszystkie albumy przypisane do konkretnego u¿ytkownika.
+        /// </summary>
+        /// <param name="userId">Identyfikator u¿ytkownika.</param>
+        /// <returns>Lista krotek z ID dokumentów i albumami u¿ytkownika.</returns>
         public async Task<List<(string Id, Album Album)>> GetAlbumsByUserIdAsync(string userId)
         {
             var query = _firestore.Collection("albums").WhereEqualTo("user_id", userId);
@@ -43,6 +58,11 @@ namespace Aplikacja_desktopowa.Service
             return albums;
         }
 
+        /// <summary>
+        /// Pobiera identyfikatory zdjêæ przypisanych do danego albumu.
+        /// </summary>
+        /// <param name="albumId">Identyfikator albumu.</param>
+        /// <returns>Lista ID zdjêæ.</returns>
         public async Task<List<string>> GetPhotoIdsForAlbumAsync(string albumId)
         {
             var photoIds = new List<string>();
@@ -58,6 +78,11 @@ namespace Aplikacja_desktopowa.Service
             return photoIds;
         }
 
+        /// <summary>
+        /// Dodaje zdjêcie do albumu w kolekcji "album_photos".
+        /// </summary>
+        /// <param name="albumId">Identyfikator albumu.</param>
+        /// <param name="photoId">Identyfikator zdjêcia.</param>
         public async Task AddPhotoToAlbumAsync(string albumId, string photoId)
         {
             var docRef = _firestore.Collection("album_photos").Document();
@@ -68,6 +93,11 @@ namespace Aplikacja_desktopowa.Service
             });
         }
 
+        /// <summary>
+        /// Usuwa zdjêcie z albumu na podstawie albumId i photoId.
+        /// </summary>
+        /// <param name="albumId">Identyfikator albumu.</param>
+        /// <param name="photoId">Identyfikator zdjêcia.</param>
         public async Task RemovePhotoFromAlbumAsync(string albumId, string photoId)
         {
             var query = _firestore.Collection("album_photos")
@@ -81,6 +111,13 @@ namespace Aplikacja_desktopowa.Service
             }
         }
 
+        /// <summary>
+        /// Tworzy nowy album w Firestore.
+        /// </summary>
+        /// <param name="name">Nazwa albumu.</param>
+        /// <param name="description">Opis albumu.</param>
+        /// <param name="userId">Identyfikator u¿ytkownika.</param>
+        /// <returns>Identyfikator utworzonego albumu.</returns>
         public async Task<string> AddAlbumAsync(string name, string description, string userId)
         {
             var docRef = _firestore.Collection("albums").Document();
@@ -95,15 +132,18 @@ namespace Aplikacja_desktopowa.Service
             return docRef.Id;
         }
 
+        /// <summary>
+        /// Usuwa album i wszystkie jego powi¹zania ze zdjêciami.
+        /// </summary>
+        /// <param name="albumId">Identyfikator albumu do usuniêcia.</param>
         public async Task DeleteAlbumAsync(string albumId)
         {
             await _firestore.Collection("albums").Document(albumId).DeleteAsync();
-            // Usuñ powi¹zania album_photos
+
             var query = _firestore.Collection("album_photos").WhereEqualTo("album_id", albumId);
             var snapshot = await query.GetSnapshotAsync();
             foreach (var doc in snapshot.Documents)
                 await doc.Reference.DeleteAsync();
         }
-
     }
 }

@@ -13,10 +13,18 @@ using System.Threading.Tasks;
 
 namespace Aplikacja_desktopowa.Service
 {
+    /// <summary>
+    /// Serwis odpowiedzialny za operacje na kolekcji użytkowników w Firestore.
+    /// Pozwala na wyszukiwanie, dodawanie użytkowników oraz oznaczanie e-maili jako zweryfikowanych.
+    /// </summary>
     public class UserService
     {
         private readonly FirestoreDb _firestore;
         private readonly CollectionReference _usersCollection;
+
+        /// <summary>
+        /// Konstruktor inicjalizujący połączenie do Firestore i kolekcję "users".
+        /// </summary>
         public UserService()
         {
             _firestore = FirebaseConfig.GetFirestoreDb();
@@ -24,6 +32,10 @@ namespace Aplikacja_desktopowa.Service
             _usersCollection = db.Collection("users");
         }
 
+        /// <summary>
+        /// Pobiera użytkownika na podstawie adresu e-mail.
+        /// Zwraca pierwszy znaleziony dokument lub null, jeśli nie znaleziono.
+        /// </summary>
         public async Task<User> GetUserByEmailAsync(string email)
         {
             try
@@ -48,6 +60,10 @@ namespace Aplikacja_desktopowa.Service
             }
         }
 
+        /// <summary>
+        /// Pobiera użytkownika na podstawie nazwy użytkownika (username).
+        /// Zwraca pierwszy znaleziony dokument lub null, jeśli nie znaleziono.
+        /// </summary>
         public async Task<User> GetUserByUsernameAsync(string username)
         {
             try
@@ -72,11 +88,18 @@ namespace Aplikacja_desktopowa.Service
             }
         }
 
+        /// <summary>
+        /// Dodaje nowego użytkownika do kolekcji "users".
+        /// </summary>
         public async Task AddUserAsync(User user)
         {
             await _usersCollection.AddAsync(user);
         }
 
+        /// <summary>
+        /// Oznacza adres e-mail jako zweryfikowany (ustawia isVerified na true)
+        /// oraz usuwa pole verification_code.
+        /// </summary>
         public async Task MarkEmailAsVerified(string email)
         {
             var snapshot = await _usersCollection.WhereEqualTo("email", email).GetSnapshotAsync();
@@ -84,10 +107,10 @@ namespace Aplikacja_desktopowa.Service
             {
                 var docRef = snapshot.Documents[0].Reference;
                 await docRef.UpdateAsync(new Dictionary<string, object>
-        {
-            { "isVerified", true },
-            { "verification_code", FieldValue.Delete }
-        });
+                {
+                    { "isVerified", true },
+                    { "verification_code", FieldValue.Delete }
+                });
             }
         }
     }

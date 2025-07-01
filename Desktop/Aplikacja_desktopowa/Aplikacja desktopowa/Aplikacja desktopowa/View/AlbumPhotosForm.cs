@@ -8,6 +8,10 @@ using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View
 {
+    /// <summary>
+    /// Formularz wyœwietlaj¹cy zdjêcia przypisane do danego albumu.
+    /// Pozwala na sortowanie, filtrowanie, edycjê metadanych i usuniêcie albumu.
+    /// </summary>
     public class AlbumPhotosForm : Form
     {
         private readonly AlbumService _albumService = new AlbumService();
@@ -18,9 +22,12 @@ namespace Aplikacja_desktopowa.View
         private TextBox textBoxTagFilter;
         private Button buttonSort;
         private List<PhotoMetadata> currentPhotos;
-
         private Button buttonDeleteAlbum;
 
+        /// <summary>
+        /// Tworzy now¹ instancjê formularza dla danego identyfikatora albumu.
+        /// </summary>
+        /// <param name="albumId">Identyfikator albumu, którego zdjêcia maj¹ zostaæ wyœwietlone.</param>
         public AlbumPhotosForm(string albumId)
         {
             _albumId = albumId;
@@ -76,12 +83,15 @@ namespace Aplikacja_desktopowa.View
 
             Load += AlbumPhotosForm_Load;
 
-            this.Resize += (s, e) =>
+            Resize += (s, e) =>
             {
                 if (currentPhotos != null) DisplayPhotos(currentPhotos);
             };
         }
 
+        /// <summary>
+        /// £adowanie zdjêæ z albumu przy uruchomieniu formularza.
+        /// </summary>
         private async void AlbumPhotosForm_Load(object sender, EventArgs e)
         {
             var photoIds = await _albumService.GetPhotoIdsForAlbumAsync(_albumId);
@@ -89,6 +99,10 @@ namespace Aplikacja_desktopowa.View
             DisplayPhotos(currentPhotos);
         }
 
+        /// <summary>
+        /// Obs³uguje klikniêcie przycisku "Usuñ album".
+        /// Wyœwietla potwierdzenie, usuwa album i zamyka formularz.
+        /// </summary>
         private async void ButtonDeleteAlbum_Click(object sender, EventArgs e)
         {
             var result = MessageBox.Show("Czy na pewno chcesz usun¹æ ten album wraz z powi¹zaniami?", "PotwierdŸ usuniêcie", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
@@ -96,16 +110,21 @@ namespace Aplikacja_desktopowa.View
             {
                 await _albumService.DeleteAlbumAsync(_albumId);
                 MessageBox.Show("Album zosta³ usuniêty.");
-                this.Close();
+                Close();
             }
         }
 
+        /// <summary>
+        /// Wyœwietla zdjêcia w siatce miniaturek na formularzu.
+        /// Tworzy miniatury, jeœli nie istniej¹.
+        /// </summary>
+        /// <param name="photos">Lista zdjêæ do wyœwietlenia.</param>
         private async void DisplayPhotos(List<PhotoMetadata> photos)
         {
+            // Usuniêcie poprzednich miniaturek
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                var ctrl = Controls[i];
-                if (ctrl is PictureBox)
+                if (Controls[i] is PictureBox)
                     Controls.RemoveAt(i);
             }
 
@@ -115,7 +134,7 @@ namespace Aplikacja_desktopowa.View
             int startY = 50;
             int x = margin;
             int y = startY;
-            int maxWidth = this.ClientSize.Width;
+            int maxWidth = ClientSize.Width;
 
             foreach (var photo in photos)
             {
@@ -148,7 +167,9 @@ namespace Aplikacja_desktopowa.View
                     Cursor = Cursors.Hand,
                     Tag = photo
                 };
+
                 try { pictureBox.Load(thumbPath); } catch { }
+
                 pictureBox.Click += Photo_Click;
                 Controls.Add(pictureBox);
 
@@ -156,6 +177,9 @@ namespace Aplikacja_desktopowa.View
             }
         }
 
+        /// <summary>
+        /// Obs³uguje klikniêcie w miniaturkê zdjêcia – otwiera formularz edycji.
+        /// </summary>
         private async void Photo_Click(object sender, EventArgs e)
         {
             var pictureBox = sender as PictureBox;
@@ -181,6 +205,9 @@ namespace Aplikacja_desktopowa.View
             }
         }
 
+        /// <summary>
+        /// Obs³uguje sortowanie zdjêæ wed³ug wybranej opcji (nazwa, data, tag).
+        /// </summary>
         private void ButtonSort_Click(object sender, EventArgs e)
         {
             if (currentPhotos == null) return;
@@ -212,14 +239,10 @@ namespace Aplikacja_desktopowa.View
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AlbumPhotosForm));
             this.SuspendLayout();
-            // 
-            // AlbumPhotosForm
-            // 
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(1232, 611);
             this.Name = "AlbumPhotosForm";
             this.ResumeLayout(false);
-
         }
     }
 }

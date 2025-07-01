@@ -13,9 +13,20 @@ using System.Text.Json;
 
 namespace Aplikacja_desktopowa.View
 {
+    /// <summary>
+    /// Formularz do edycji metadanych zdjêcia, w tym tytu³u, opisu, lokalizacji oraz tagów.
+    /// Umo¿liwia równie¿ usuniêcie zdjêcia z albumu oraz pobranie zdjêcia na dysk lokalny.
+    /// </summary>
     public class PhotoEditForm : Form
     {
+        /// <summary>
+        /// Metadane edytowanego zdjêcia.
+        /// </summary>
         public PhotoMetadata Photo { get; private set; }
+
+        /// <summary>
+        /// Flaga oznaczaj¹ca, czy zdjêcie ma zostaæ usuniête z albumu.
+        /// </summary>
         public bool RemoveFromAlbum { get; private set; } = false;
 
         private PhotoService photoService = new PhotoService();
@@ -33,13 +44,16 @@ namespace Aplikacja_desktopowa.View
 
         private PictureBox pictureBox;
 
-        // Example locations (replace with your own or load dynamically)
+        // Przyk³adowe lokalizacje (mo¿na zast¹piæ w³asnymi lub ³adowaæ dynamicznie)
         private readonly List<string> availableLocations = new List<string>
         {
             "Paris",
             "Tokyo"
         };
 
+        /// <summary>
+        /// Konstruktor formularza edycji zdjêcia inicjuj¹cy kontrolki i wczytuj¹cy dane zdjêcia.
+        /// </summary>
         public PhotoEditForm(PhotoMetadata photo)
         {
             Photo = photo;
@@ -63,9 +77,9 @@ namespace Aplikacja_desktopowa.View
 
             textBoxTags = new TextBox { Text = string.Join(",", photo.Tags ?? new List<string>()), Left = 20, Top = 140, Width = 300 };
 
-            buttonSave = new Button { Text = "Save", Left = 20, Top = 180, Width = 120 };
-            buttonRemove = new Button { Text = "Remove", Left = 140, Top = 180, Width = 120 };
-            buttonDownload = new Button { Text = "Download Photo", Left = 260, Top = 180, Width = 120 };
+            buttonSave = new Button { Text = "Zapisz", Left = 20, Top = 180, Width = 120 };
+            buttonRemove = new Button { Text = "Usuñ", Left = 140, Top = 180, Width = 120 };
+            buttonDownload = new Button { Text = "Pobierz zdjêcie", Left = 260, Top = 180, Width = 120 };
 
             pictureBox = new PictureBox
             {
@@ -98,7 +112,7 @@ namespace Aplikacja_desktopowa.View
                 Top = 530,
                 Width = 500,
                 Height = 30,
-                Text = "Location cannot be displayed on the map.",
+                Text = "Nie mo¿na wyœwietliæ lokalizacji na mapie.",
                 ForeColor = Color.Red,
                 Visible = false
             };
@@ -143,7 +157,7 @@ namespace Aplikacja_desktopowa.View
                 {
                     if (string.IsNullOrWhiteSpace(Photo.FilePath))
                     {
-                        MessageBox.Show("No file path (photo URL).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Brak œcie¿ki do pliku (URL zdjêcia).", "B³¹d", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
@@ -161,11 +175,11 @@ namespace Aplikacja_desktopowa.View
                         }
                     }
 
-                    MessageBox.Show($"Photo downloaded to: {localFilePath}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Zdjêcie zosta³o pobrane do: {localFilePath}", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error downloading photo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"B³¹d podczas pobierania zdjêcia: {ex.Message}", "B³¹d", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             };
 
@@ -177,12 +191,16 @@ namespace Aplikacja_desktopowa.View
             Controls.Add(buttonRemove);
             Controls.Add(buttonDownload);
 
-            Text = "Edit Photo";
+            Text = "Edycja zdjêcia";
             ClientSize = new System.Drawing.Size(1500, 1000);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.CenterParent;
         }
 
+        /// <summary>
+        /// Aktualizuje widok mapy na podstawie podanej lokalizacji.
+        /// Jeœli lokalizacja jest niepoprawna lub pusta, pokazuje odpowiedni komunikat b³êdu.
+        /// </summary>
         private void UpdateMap(string location)
         {
             try
@@ -190,7 +208,7 @@ namespace Aplikacja_desktopowa.View
                 if (string.IsNullOrWhiteSpace(location))
                 {
                     gmap.Visible = false;
-                    labelMapError.Text = "No location selected.";
+                    labelMapError.Text = "Nie wybrano lokalizacji.";
                     labelMapError.Visible = true;
                     return;
                 }
@@ -202,7 +220,7 @@ namespace Aplikacja_desktopowa.View
                         gmap.Visible = true;
                         labelMapError.Visible = false;
                         gmap.Position = new PointLatLng(lat, lng);
-                        gmap.Zoom = 4; 
+                        gmap.Zoom = 4;
                         return;
                     }
                 }
@@ -220,17 +238,20 @@ namespace Aplikacja_desktopowa.View
                 }
 
                 gmap.Visible = false;
-                labelMapError.Text = "Location cannot be displayed on the map.";
+                labelMapError.Text = "Nie mo¿na wyœwietliæ lokalizacji na mapie.";
                 labelMapError.Visible = true;
             }
             catch (Exception ex)
             {
                 gmap.Visible = false;
-                labelMapError.Text = $"Map error: {ex.Message}";
+                labelMapError.Text = $"B³¹d mapy: {ex.Message}";
                 labelMapError.Visible = true;
             }
         }
 
+        /// <summary>
+        /// Próbuje sparsowaæ wspó³rzêdne geograficzne z tekstu w formacie "lat,lng".
+        /// </summary>
         private bool TryParseCoordinates(string location, out double lat, out double lng)
         {
             lat = lng = 0;
@@ -239,6 +260,9 @@ namespace Aplikacja_desktopowa.View
             return double.TryParse(parts[0].Trim(), out lat) && double.TryParse(parts[1].Trim(), out lng);
         }
 
+        /// <summary>
+        /// Sprawdza, czy podany tekst zawiera przynajmniej jedn¹ literê.
+        /// </summary>
         private bool ContainsLetter(string input)
         {
             foreach (char c in input)
@@ -247,6 +271,9 @@ namespace Aplikacja_desktopowa.View
             return false;
         }
 
+        /// <summary>
+        /// Wykonuje geokodowanie adresu na wspó³rzêdne geograficzne korzystaj¹c z us³ugi OpenStreetMap Nominatim.
+        /// </summary>
         private PointLatLng? GeocodeAddress(string address)
         {
             try

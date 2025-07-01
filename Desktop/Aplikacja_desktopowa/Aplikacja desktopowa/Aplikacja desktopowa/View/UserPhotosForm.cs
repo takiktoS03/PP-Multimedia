@@ -10,6 +10,9 @@ using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View
 {
+    /// <summary>
+    /// Formularz do wyświetlania i zarządzania zdjęciami użytkownika.
+    /// </summary>
     public partial class UserPhotosForm : Form
     {
         private readonly string _userId;
@@ -22,6 +25,9 @@ namespace Aplikacja_desktopowa.View
         private Button buttonSort;
         private Button buttonAddPhoto;
 
+        /// <summary>
+        /// Inicjalizuje nową instancję formularza ze zdjęciami użytkownika.
+        /// </summary>
         public UserPhotosForm(string userId)
         {
             _userId = userId;
@@ -76,13 +82,16 @@ namespace Aplikacja_desktopowa.View
             };
 
             Load += UserPhotosForm_Load;
-            
+
             this.Resize += (s, e) =>
             {
                 if (currentPhotos != null) DisplayPhotos(currentPhotos);
             };
         }
 
+        /// <summary>
+        /// Ładuje zdjęcia użytkownika przy załadowaniu formularza.
+        /// </summary>
         private async void UserPhotosForm_Load(object sender, EventArgs e)
         {
             userPhotos = await _photoService.GetPhotosByUserIdAsync(_userId);
@@ -90,6 +99,9 @@ namespace Aplikacja_desktopowa.View
             DisplayPhotos(currentPhotos);
         }
 
+        /// <summary>
+        /// Sortuje zdjęcia na podstawie wybranego kryterium (nazwa, data, tag).
+        /// </summary>
         private void ButtonSort_Click(object sender, EventArgs e)
         {
             if (currentPhotos == null) return;
@@ -117,6 +129,9 @@ namespace Aplikacja_desktopowa.View
             DisplayPhotos(sorted);
         }
 
+        /// <summary>
+        /// Obsługuje dodanie nowych zdjęć do systemu.
+        /// </summary>
         private async void ButtonAddPhoto_Click(object sender, EventArgs e)
         {
             using (var addPhotosForm = new AddPhotosForm())
@@ -142,6 +157,9 @@ namespace Aplikacja_desktopowa.View
             }
         }
 
+        /// <summary>
+        /// Wyświetla miniatury zdjęć na formularzu.
+        /// </summary>
         private async void DisplayPhotos(List<PhotoMetadata> photos)
         {
             for (int i = Controls.Count - 1; i >= 0; i--)
@@ -196,6 +214,9 @@ namespace Aplikacja_desktopowa.View
             }
         }
 
+        /// <summary>
+        /// Otwiera formularz edycji po kliknięciu zdjęcia.
+        /// </summary>
         private void PictureBox_Click(object sender, EventArgs e)
         {
             if (sender is PictureBox pb && pb.Tag is PhotoMetadata photo)

@@ -3,17 +3,26 @@ using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View
 {
+    /// <summary>
+    /// Formularz pocz¹tkowy aplikacji, umo¿liwia wybór pomiêdzy logowaniem a rejestracj¹.
+    /// </summary>
     public partial class EntryForm : Form
     {
         private Button buttonLogin;
         private Button buttonRegister;
 
+        /// <summary>
+        /// Inicjalizuje now¹ instancjê formularza wejœciowego.
+        /// </summary>
         public EntryForm()
         {
             InitializeComponent();
             this.FormClosed += EntryForm_FormClosed;
         }
 
+        /// <summary>
+        /// Obs³uguje klikniêcie przycisku "Login" – otwiera formularz logowania i ukrywa bie¿¹cy formularz.
+        /// </summary>
         private void buttonLogin_Click(object sender, EventArgs e)
         {
             LoginForm loginForm = new LoginForm();
@@ -21,6 +30,9 @@ namespace Aplikacja_desktopowa.View
             this.Hide();
         }
 
+        /// <summary>
+        /// Obs³uguje klikniêcie przycisku "Register" – otwiera formularz rejestracji i ukrywa bie¿¹cy formularz.
+        /// </summary>
         private void buttonRegister_Click(object sender, EventArgs e)
         {
             RegisterForm registerForm = new RegisterForm();
@@ -28,6 +40,9 @@ namespace Aplikacja_desktopowa.View
             this.Hide();
         }
 
+        /// <summary>
+        /// Zamyka ca³¹ aplikacjê po zamkniêciu tego formularza (np. klikniêciu X).
+        /// </summary>
         private void EntryForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             Application.Exit();

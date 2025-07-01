@@ -7,8 +7,14 @@ using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View.Utils
 {
+    /// <summary>
+    /// Udostępnia funkcję wyświetlania prostego okna dialogowego z polem tekstowym.
+    /// </summary>
     public static class Prompt
     {
+        /// <summary>
+        /// Wyświetla okno dialogowe z tekstem i polem do wprowadzenia danych.
+        /// </summary>
         public static string ShowDialog(string text, string caption)
         {
             Form prompt = new Form()

@@ -4,6 +4,9 @@ using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.View
 {
+    /// <summary>
+    /// Formularz g³ówny u¿ytkownika po zalogowaniu.
+    /// </summary>
     public class UserForm : Form
     {
         private readonly string _userId;
@@ -13,6 +16,9 @@ namespace Aplikacja_desktopowa.View
         private Button buttonLogout;
         private Button buttonPhotos;
 
+        /// <summary>
+        /// Inicjalizuje now¹ instancjê formularza u¿ytkownika.
+        /// </summary>
         public UserForm(string userId)
         {
             _userId = userId;
@@ -60,12 +66,18 @@ namespace Aplikacja_desktopowa.View
             this.FormClosed += UserForm_FormClosed;
         }
 
+        /// <summary>
+        /// Otwiera formularz ze zdjêciami u¿ytkownika.
+        /// </summary>
         private void ButtonPhotos_Click(object sender, EventArgs e)
         {
             var form = new UserPhotosForm(_userId);
             form.Show();
         }
 
+        /// <summary>
+        /// Dodaje nowy album u¿ytkownika.
+        /// </summary>
         private async void ButtonAddAlbum_Click(object sender, EventArgs e)
         {
             using (var addAlbumForm = new AddAlbumForm())
@@ -79,12 +91,18 @@ namespace Aplikacja_desktopowa.View
             }
         }
 
+        /// <summary>
+        /// Przechodzi do listy albumów u¿ytkownika.
+        /// </summary>
         private void ButtonAlbums_Click(object sender, EventArgs e)
         {
             AlbumsForm albumsForm = new AlbumsForm(_userId);
             albumsForm.Show();
         }
 
+        /// <summary>
+        /// Wylogowuje u¿ytkownika i wraca do ekranu logowania.
+        /// </summary>
         private void ButtonLogout_Click(object sender, EventArgs e)
         {
             var entryForm = new EntryForm();
@@ -92,6 +110,9 @@ namespace Aplikacja_desktopowa.View
             this.Hide();
         }
 
+        /// <summary>
+        /// Obs³uguje zamkniêcie formularza u¿ytkownika.
+        /// </summary>
         private void UserForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             Application.Exit();

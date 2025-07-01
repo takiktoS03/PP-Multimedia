@@ -7,20 +7,32 @@ using System.Windows.Forms;
 
 namespace Aplikacja_desktopowa.ViewModel
 {
+    /// <summary>
+    /// Warstwa ViewModel dla zdjęć.
+    /// </summary>
     public class PhotoViewModel
     {
         private readonly PhotoService _photoService;
 
+        /// <summary>
+        /// Inicjalizuje nową instancję klasy PhotoViewModel.
+        /// </summary>
         public PhotoViewModel()
         {
             _photoService = new PhotoService();
         }
 
+        /// <summary>
+        /// Zwraca listę wszystkich zdjęć.
+        /// </summary>
         public async Task<List<PhotoMetadata>> GetAllPhotosAsync()
         {
             return await _photoService.GetAllPhotosAsync();
         }
 
+        /// <summary>
+        /// Wyświetla zdjęcia w podanej kontrolce.
+        /// </summary>
         public void ShowPhotosOnPanel(IEnumerable<PhotoMetadata> photos, Control parent, int startY = 10)
         {
             int y = startY;

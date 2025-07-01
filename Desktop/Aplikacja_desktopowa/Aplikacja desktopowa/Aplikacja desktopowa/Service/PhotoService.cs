@@ -13,15 +13,26 @@ using System.Threading.Tasks;
 
 namespace Aplikacja_desktopowa.Service
 {
+    /// <summary>
+    /// Serwis zarządzający operacjami na zdjęciach: 
+    /// dodawanie, pobieranie, aktualizacja oraz operacje na plikach w Firebase Storage.
+    /// </summary>
     public class PhotoService
     {
         private readonly FirestoreDb _firestore;
 
+        /// <summary>
+        /// Konstruktor inicjalizujący połączenie do Firestore.
+        /// </summary>
         public PhotoService()
         {
             _firestore = FirebaseConfig.GetFirestoreDb();
         }
 
+        /// <summary>
+        /// Dodaje nowy dokument zdjęcia o podanym ID w kolekcji "photos".
+        /// Ustawia czas dodania na UTC.
+        /// </summary>
         public async Task AddPhotoAsync(string id, PhotoMetadata photo)
         {
             photo.UploadedAt = DateTime.UtcNow;
@@ -29,6 +40,10 @@ namespace Aplikacja_desktopowa.Service
             await docRef.SetAsync(photo);
         }
 
+        /// <summary>
+        /// Pobiera metadane zdjęcia na podstawie jego ID.
+        /// Zwraca null, jeśli dokument nie istnieje.
+        /// </summary>
         public async Task<PhotoMetadata> GetPhotoAsync(string id)
         {
             DocumentReference docRef = _firestore.Collection("photos").Document(id);
@@ -42,6 +57,9 @@ namespace Aplikacja_desktopowa.Service
             return null;
         }
 
+        /// <summary>
+        /// Pobiera listę wszystkich zdjęć z kolekcji "photos".
+        /// </summary>
         public async Task<List<PhotoMetadata>> GetAllPhotosAsync()
         {
             Query query = _firestore.Collection("photos");
@@ -59,6 +77,10 @@ namespace Aplikacja_desktopowa.Service
             return result;
         }
 
+        /// <summary>
+        /// Pobiera listę zdjęć na podstawie listy identyfikatorów zdjęć.
+        /// Pomija zdjęcia, które nie istnieją.
+        /// </summary>
         public async Task<List<PhotoMetadata>> GetPhotosByIdsAsync(List<string> photoIds)
         {
             var result = new List<PhotoMetadata>();
@@ -71,6 +93,9 @@ namespace Aplikacja_desktopowa.Service
             return result;
         }
 
+        /// <summary>
+        /// Pobiera wszystkie zdjęcia danego użytkownika (według user_id).
+        /// </summary>
         public async Task<List<PhotoMetadata>> GetPhotosByUserIdAsync(string userId)
         {
             var collectionRef = _firestore.Collection("photos");
@@ -92,9 +117,15 @@ namespace Aplikacja_desktopowa.Service
             return photos;
         }
 
+        /// <summary>
+        /// Dodaje zdjęcie do Firestore i Firebase Storage jednocześnie,
+        /// zwraca wygenerowany ID dokumentu.
+        /// </summary>
         public async Task<string> AddPhotoAndGetIdAsync(PhotoMetadata photo, string localFilePath)
         {
+            // Generowanie unikalnej nazwy pliku w storage
             string fileNameInStorage = Guid.NewGuid().ToString() + Path.GetExtension(localFilePath);
+            // Wysyłanie pliku do Firebase Storage i pobranie publicznego URL
             string url = await UploadPhotoToStorageAsync(localFilePath, fileNameInStorage);
 
             photo.FilePath = url;
@@ -106,12 +137,15 @@ namespace Aplikacja_desktopowa.Service
             return docRef.Id;
         }
 
+        /// <summary>
+        /// Upload pliku lokalnego do Firebase Storage.
+        /// Zwraca URL do pobrania zdjęcia.
+        /// </summary>
         public async Task<string> UploadPhotoToStorageAsync(string localFilePath, string fileNameInStorage)
         {
             string bucketName = "image-management-cbaee.firebasestorage.app";
             var storage = StorageClient.Create();
             Google.Apis.Storage.v1.Data.Object storageObject;
-
 
             using (var fileStream = File.OpenRead(localFilePath))
             {
@@ -124,10 +158,12 @@ namespace Aplikacja_desktopowa.Service
                 );
             }
 
+            // Pobranie tokenu dostępu do pliku, jeśli istnieje
             string token = null;
             if (storageObject.Metadata != null && storageObject.Metadata.ContainsKey("firebaseStorageDownloadTokens"))
                 token = storageObject.Metadata["firebaseStorageDownloadTokens"];
 
+            // Budowa URL do pobrania pliku
             string url = $"https://firebasestorage.googleapis.com/v0/b/{bucketName}/o/photos%2F{System.Uri.EscapeDataString(fileNameInStorage)}?alt=media";
             if (!string.IsNullOrEmpty(token))
                 url += $"&token={token}";
@@ -135,6 +171,9 @@ namespace Aplikacja_desktopowa.Service
             return url;
         }
 
+        /// <summary>
+        /// Pobiera zdjęcie z podanego URL i zapisuje je lokalnie.
+        /// </summary>
         public async Task DownloadPhotoByUrlAsync(string downloadUrl, string localFilePath)
         {
             using (HttpClient client = new HttpClient())
@@ -149,6 +188,10 @@ namespace Aplikacja_desktopowa.Service
             }
         }
 
+        /// <summary>
+        /// Aktualizuje metadane zdjęcia w kolekcji Firestore.
+        /// Wymaga podania ID zdjęcia.
+        /// </summary>
         public async Task UpdatePhotoAsync(PhotoMetadata photo)
         {
             if (string.IsNullOrEmpty(photo.Id))
@@ -158,6 +201,9 @@ namespace Aplikacja_desktopowa.Service
             await docRef.SetAsync(photo);
         }
 
+        /// <summary>
+        /// Tworzy miniaturę zdjęcia (thumbnail) o zadanych wymiarach i zapisuje ją pod wskazaną ścieżką.
+        /// </summary>
         public static void CreateThumbnail(string originalPath, string thumbnailPath, int width, int height)
         {
             using (var image = Image.FromFile(originalPath))
