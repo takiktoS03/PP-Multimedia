@@ -1,4 +1,5 @@
-﻿using Aplikacja_desktopowa.View;
+﻿using Aplikacja_desktopowa.Service;
+using Aplikacja_desktopowa.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +16,12 @@ namespace Aplikacja_desktopowa
         [STAThread]
         static void Main()
         {
+            FirestoreCopier copier = new FirestoreCopier();
+            copier.CopyAsync().GetAwaiter().GetResult();
+            FirebaseConfig.Init();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form2());
+            Application.Run(new EntryForm());
         }
     }
 }

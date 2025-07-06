@@ -1,59 +1,217 @@
-﻿using FireSharp;
+﻿using Aplikacja_desktopowa.Model;
+using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Firestore;
+using Google.Cloud.Firestore.V1;
+using Google.Cloud.Storage.V1;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 
-public class PhotoService
+namespace Aplikacja_desktopowa.Service
 {
-    private readonly FirestoreDb _firestore;
-
-    public PhotoService()
+    /// <summary>
+    /// Serwis zarządzający operacjami na zdjęciach: 
+    /// dodawanie, pobieranie, aktualizacja oraz operacje na plikach w Firebase Storage.
+    /// </summary>
+    public class PhotoService
     {
-        string pathToKey = "image-management-cbaee-firebase-adminsdk-fbsvc-534514b3a5.json"; // Ścieżka do Twojego pliku klucza
-        Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", pathToKey);
+        private readonly FirestoreDb _firestore;
 
-        _firestore = FirestoreDb.Create("apka_desktop_id"); // np. "mojprojekt-123456"
-    }
-
-
-
-    // do przetestowania:
-    public async Task AddPhotoAsync(string id, PhotoMetadata photo)
-    {
-        DocumentReference docRef = _firestore.Collection("photos").Document(id);
-        await docRef.SetAsync(photo);
-    }
-
-    public async Task<PhotoMetadata> GetPhotoAsync(string id)
-    {
-        DocumentReference docRef = _firestore.Collection("photos").Document(id);
-        DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-
-        if (snapshot.Exists)
+        /// <summary>
+        /// Konstruktor inicjalizujący połączenie do Firestore.
+        /// </summary>
+        public PhotoService()
         {
-            return snapshot.ConvertTo<PhotoMetadata>();
+            _firestore = FirebaseConfig.GetFirestoreDb();
         }
 
-        return null;
-    }
-
-    public async Task<List<PhotoMetadata>> GetAllPhotosAsync()
-    {
-        Query query = _firestore.Collection("photos");
-        QuerySnapshot snapshot = await query.GetSnapshotAsync();
-
-        List<PhotoMetadata> result = new List<PhotoMetadata>();
-        foreach (DocumentSnapshot doc in snapshot.Documents)
+        /// <summary>
+        /// Dodaje nowy dokument zdjęcia o podanym ID w kolekcji "photos".
+        /// Ustawia czas dodania na UTC.
+        /// </summary>
+        public async Task AddPhotoAsync(string id, PhotoMetadata photo)
         {
-            if (doc.Exists)
+            photo.UploadedAt = DateTime.UtcNow;
+            DocumentReference docRef = _firestore.Collection("photos").Document(id);
+            await docRef.SetAsync(photo);
+        }
+
+        /// <summary>
+        /// Pobiera metadane zdjęcia na podstawie jego ID.
+        /// Zwraca null, jeśli dokument nie istnieje.
+        /// </summary>
+        public async Task<PhotoMetadata> GetPhotoAsync(string id)
+        {
+            DocumentReference docRef = _firestore.Collection("photos").Document(id);
+            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+            if (snapshot.Exists)
             {
-                result.Add(doc.ConvertTo<PhotoMetadata>());
+                return snapshot.ConvertTo<PhotoMetadata>();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Pobiera listę wszystkich zdjęć z kolekcji "photos".
+        /// </summary>
+        public async Task<List<PhotoMetadata>> GetAllPhotosAsync()
+        {
+            Query query = _firestore.Collection("photos");
+            QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+            List<PhotoMetadata> result = new List<PhotoMetadata>();
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                if (doc.Exists)
+                {
+                    result.Add(doc.ConvertTo<PhotoMetadata>());
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Pobiera listę zdjęć na podstawie listy identyfikatorów zdjęć.
+        /// Pomija zdjęcia, które nie istnieją.
+        /// </summary>
+        public async Task<List<PhotoMetadata>> GetPhotosByIdsAsync(List<string> photoIds)
+        {
+            var result = new List<PhotoMetadata>();
+            foreach (var id in photoIds)
+            {
+                var photo = await GetPhotoAsync(id);
+                if (photo != null)
+                    result.Add(photo);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Pobiera wszystkie zdjęcia danego użytkownika (według user_id).
+        /// </summary>
+        public async Task<List<PhotoMetadata>> GetPhotosByUserIdAsync(string userId)
+        {
+            var collectionRef = _firestore.Collection("photos");
+            var query = collectionRef.WhereEqualTo("user_id", userId);
+            var snapshot = await query.GetSnapshotAsync();
+
+            var photos = new List<PhotoMetadata>();
+
+            foreach (var document in snapshot.Documents)
+            {
+                if (document.Exists)
+                {
+                    var photo = document.ConvertTo<PhotoMetadata>();
+                    photo.Id = document.Id;
+                    photos.Add(photo);
+                }
+            }
+
+            return photos;
+        }
+
+        /// <summary>
+        /// Dodaje zdjęcie do Firestore i Firebase Storage jednocześnie,
+        /// zwraca wygenerowany ID dokumentu.
+        /// </summary>
+        public async Task<string> AddPhotoAndGetIdAsync(PhotoMetadata photo, string localFilePath)
+        {
+            // Generowanie unikalnej nazwy pliku w storage
+            string fileNameInStorage = Guid.NewGuid().ToString() + Path.GetExtension(localFilePath);
+            // Wysyłanie pliku do Firebase Storage i pobranie publicznego URL
+            string url = await UploadPhotoToStorageAsync(localFilePath, fileNameInStorage);
+
+            photo.FilePath = url;
+            photo.UploadedAt = DateTime.UtcNow;
+
+            var docRef = _firestore.Collection("photos").Document();
+            photo.Id = docRef.Id;
+            await docRef.SetAsync(photo);
+            return docRef.Id;
+        }
+
+        /// <summary>
+        /// Upload pliku lokalnego do Firebase Storage.
+        /// Zwraca URL do pobrania zdjęcia.
+        /// </summary>
+        public async Task<string> UploadPhotoToStorageAsync(string localFilePath, string fileNameInStorage)
+        {
+            string bucketName = "image-management-cbaee.firebasestorage.app";
+            var storage = StorageClient.Create();
+            Google.Apis.Storage.v1.Data.Object storageObject;
+
+            using (var fileStream = File.OpenRead(localFilePath))
+            {
+                storageObject = await storage.UploadObjectAsync(
+                    bucket: bucketName,
+                    objectName: $"photos/{fileNameInStorage}",
+                    contentType: null,
+                    source: fileStream
+                //options: new UploadObjectOptions { PredefinedAcl = PredefinedObjectAcl.PublicRead }
+                );
+            }
+
+            // Pobranie tokenu dostępu do pliku, jeśli istnieje
+            string token = null;
+            if (storageObject.Metadata != null && storageObject.Metadata.ContainsKey("firebaseStorageDownloadTokens"))
+                token = storageObject.Metadata["firebaseStorageDownloadTokens"];
+
+            // Budowa URL do pobrania pliku
+            string url = $"https://firebasestorage.googleapis.com/v0/b/{bucketName}/o/photos%2F{System.Uri.EscapeDataString(fileNameInStorage)}?alt=media";
+            if (!string.IsNullOrEmpty(token))
+                url += $"&token={token}";
+
+            return url;
+        }
+
+        /// <summary>
+        /// Pobiera zdjęcie z podanego URL i zapisuje je lokalnie.
+        /// </summary>
+        public async Task DownloadPhotoByUrlAsync(string downloadUrl, string localFilePath)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var response = await client.GetAsync(downloadUrl);
+                response.EnsureSuccessStatusCode();
+
+                using (var fs = new FileStream(localFilePath, FileMode.Create, FileAccess.Write))
+                {
+                    await response.Content.CopyToAsync(fs);
+                }
             }
         }
 
-        return result;
+        /// <summary>
+        /// Aktualizuje metadane zdjęcia w kolekcji Firestore.
+        /// Wymaga podania ID zdjęcia.
+        /// </summary>
+        public async Task UpdatePhotoAsync(PhotoMetadata photo)
+        {
+            if (string.IsNullOrEmpty(photo.Id))
+                throw new ArgumentException("Photo Id is required");
+
+            var docRef = _firestore.Collection("photos").Document(photo.Id);
+            await docRef.SetAsync(photo);
+        }
+
+        /// <summary>
+        /// Tworzy miniaturę zdjęcia (thumbnail) o zadanych wymiarach i zapisuje ją pod wskazaną ścieżką.
+        /// </summary>
+        public static void CreateThumbnail(string originalPath, string thumbnailPath, int width, int height)
+        {
+            using (var image = Image.FromFile(originalPath))
+            using (var thumb = image.GetThumbnailImage(width, height, () => false, IntPtr.Zero))
+            {
+                thumb.Save(thumbnailPath, ImageFormat.Jpeg);
+            }
+        }
+
     }
 }

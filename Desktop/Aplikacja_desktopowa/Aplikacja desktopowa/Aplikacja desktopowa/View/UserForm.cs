@@ -1,0 +1,135 @@
+using Aplikacja_desktopowa.Service;
+using System;
+using System.Windows.Forms;
+
+namespace Aplikacja_desktopowa.View
+{
+    /// <summary>
+    /// Formularz g³ówny u¿ytkownika po zalogowaniu.
+    /// </summary>
+    public class UserForm : Form
+    {
+        private readonly string _userId;
+
+        private Button buttonAddAlbum;
+        private Button buttonAlbums;
+        private Button buttonLogout;
+        private Button buttonPhotos;
+
+        /// <summary>
+        /// Inicjalizuje now¹ instancjê formularza u¿ytkownika.
+        /// </summary>
+        public UserForm(string userId)
+        {
+            _userId = userId;
+
+            buttonPhotos = new Button
+            {
+                Text = "Moje zdjêcia",
+                Location = new System.Drawing.Point(50, 50),
+                Size = new System.Drawing.Size(150, 30)
+            };
+            buttonPhotos.Click += ButtonPhotos_Click;
+
+            buttonAddAlbum = new Button
+            {
+                Text = "Dodaj album",
+                Location = new System.Drawing.Point(50, 100),
+                Size = new System.Drawing.Size(150, 30)
+            };
+            buttonAddAlbum.Click += ButtonAddAlbum_Click;
+
+            buttonAlbums = new Button
+            {
+                Text = "PrzejdŸ do albumów",
+                Location = new System.Drawing.Point(50, 150),
+                Size = new System.Drawing.Size(150, 30)
+            };
+            buttonAlbums.Click += ButtonAlbums_Click;
+
+            buttonLogout = new Button
+            {
+                Text = "Wyloguj",
+                Location = new System.Drawing.Point(50, 200),
+                Size = new System.Drawing.Size(150, 30)
+            };
+            buttonLogout.Click += ButtonLogout_Click;
+
+            Controls.Add(buttonPhotos);
+            Controls.Add(buttonAddAlbum);
+            Controls.Add(buttonAlbums);
+            Controls.Add(buttonLogout);
+
+            Text = "Strona u¿ytkownika";
+            ClientSize = new System.Drawing.Size(250, 300);
+
+            this.FormClosed += UserForm_FormClosed;
+        }
+
+        /// <summary>
+        /// Otwiera formularz ze zdjêciami u¿ytkownika.
+        /// </summary>
+        private void ButtonPhotos_Click(object sender, EventArgs e)
+        {
+            var form = new UserPhotosForm(_userId);
+            form.Show();
+        }
+
+        /// <summary>
+        /// Dodaje nowy album u¿ytkownika.
+        /// </summary>
+        private async void ButtonAddAlbum_Click(object sender, EventArgs e)
+        {
+            using (var addAlbumForm = new AddAlbumForm())
+            {
+                if (addAlbumForm.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(addAlbumForm.AlbumName))
+                {
+                    var albumService = new AlbumService();
+                    await albumService.AddAlbumAsync(addAlbumForm.AlbumName, addAlbumForm.AlbumDescription, _userId);
+                    MessageBox.Show("Album zosta³ dodany.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Przechodzi do listy albumów u¿ytkownika.
+        /// </summary>
+        private void ButtonAlbums_Click(object sender, EventArgs e)
+        {
+            AlbumsForm albumsForm = new AlbumsForm(_userId);
+            albumsForm.Show();
+        }
+
+        /// <summary>
+        /// Wylogowuje u¿ytkownika i wraca do ekranu logowania.
+        /// </summary>
+        private void ButtonLogout_Click(object sender, EventArgs e)
+        {
+            var entryForm = new EntryForm();
+            entryForm.Show();
+            this.Hide();
+        }
+
+        /// <summary>
+        /// Obs³uguje zamkniêcie formularza u¿ytkownika.
+        /// </summary>
+        private void UserForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UserForm));
+            this.SuspendLayout();
+            // 
+            // UserForm
+            // 
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1231, 606);
+            this.Name = "UserForm";
+            this.ResumeLayout(false);
+
+        }
+    }
+}

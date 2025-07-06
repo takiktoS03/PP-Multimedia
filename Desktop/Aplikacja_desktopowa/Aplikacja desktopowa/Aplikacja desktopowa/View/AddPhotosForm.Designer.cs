@@ -1,6 +1,6 @@
 ﻿namespace Aplikacja_desktopowa.View
 {
-    partial class Form2
+    partial class AddPhotosForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,33 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.pictureBoxPhoto = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPhoto)).BeginInit();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddPhotosForm));
             this.SuspendLayout();
             // 
-            // pictureBoxPhoto
-            // 
-            this.pictureBoxPhoto.Location = new System.Drawing.Point(266, 143);
-            this.pictureBoxPhoto.Name = "pictureBoxPhoto";
-            this.pictureBoxPhoto.Size = new System.Drawing.Size(229, 127);
-            this.pictureBoxPhoto.TabIndex = 0;
-            this.pictureBoxPhoto.TabStop = false;
-            // 
-            // Form2
+            // AddPhotosForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.pictureBoxPhoto);
-            this.Name = "Form2";
-            this.Text = "Form2";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPhoto)).EndInit();
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(1231, 608);
+            this.Name = "AddPhotosForm";
+            this.Text = "AddPhotosForm";
             this.ResumeLayout(false);
 
         }
 
         #endregion
-
-        private System.Windows.Forms.PictureBox pictureBoxPhoto;
     }
 }
